@@ -93,11 +93,15 @@ const reportar = (salidaId, territorioId) => {
           <div class="card-body">
             <div class="row">
               <div class="col-6 col-md-4 mb-2">
-                <strong>Conductor:</strong>
-                {{
-                  usuarioStore.getUsuarioPorId(salida.usuarioId)?.nombre ||
-                  "N/A"
-                }}
+                <strong>Conductores:</strong>
+                <span v-if="salida.usuarioIds && salida.usuarioIds.length">
+                  <span v-for="(uid, idx) in salida.usuarioIds" :key="uid">
+                    {{ usuarioStore.getUsuarioPorId(uid)?.nombre || 'N/A' }}{{ usuarioStore.getUsuarioPorId(uid)?.apellido ? ' ' + usuarioStore.getUsuarioPorId(uid)?.apellido : '' }}<span v-if="idx < salida.usuarioIds.length - 1">, </span>
+                  </span>
+                </span>
+                <span v-else>
+                  N/A
+                </span>
               </div>
               <div class="col-6 col-md-4 mb-2">
                 <strong>Territorio:</strong>
@@ -129,8 +133,9 @@ const reportar = (salidaId, territorioId) => {
                 }}
               </div>
               <div class="col-12 mb-2">
-                <strong>Comentario:</strong>
-                {{ salida.observaciones || "Sin comentarios" }}
+                <!-- Por el momento observaciones es usado como grupo/s -->
+                <strong>Grupo/s:</strong>
+                {{ salida.observaciones || "Todos" }}
               </div>
               <div
                 v-if="

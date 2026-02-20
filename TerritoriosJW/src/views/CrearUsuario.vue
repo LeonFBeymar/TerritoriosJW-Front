@@ -34,19 +34,19 @@ const volver = () => {
         <h1 class="mb-4 ">Crear Usuario</h1>
         <form @submit.prevent="crearUsuario" class="row g-3">
             <div class="col-md-6">
-                <label for="nombre" class="form-label"> <strong>Nombre</strong></label>
+                <label for="nombre" class="form-label"> <strong>Nombre *</strong></label>
                 <input type="text" id="nombre" v-model="form.nombre" class="form-control" required />
             </div>
             <div class="col-md-6">
-                <label for="apellido" class="form-label"> <strong>Apellido</strong></label>
+                <label for="apellido" class="form-label"> <strong>Apellido *</strong></label>
                 <input type="text" id="apellido" v-model="form.apellido" class="form-control" required />
             </div>
             <div class="col-md-6">
-                <label for="email" class="form-label"> <strong>Email</strong></label>
+                <label for="email" class="form-label"> <strong>Email *</strong></label>
                 <input type="email" id="email" v-model="form.email" class="form-control" required />
             </div>
             <div class="col-md-6">
-                <label for="password" class="form-label"> <strong>Contraseña</strong></label>
+                <label for="password" class="form-label"> <strong>Contraseña *</strong></label>
                 <div class="input-group">
                     <input :type="showPassword ? 'text' : 'password'" id="password" v-model="form.password" class="form-control" required autocomplete="new-password" />
                     <button type="button" class="btn btn-outline-secondary" @click="showPassword = !showPassword" tabindex="-1">
@@ -56,7 +56,7 @@ const volver = () => {
                 </div>
             </div>
             <div class="col-md-6">
-                <label for="repeatPassword" class="form-label"> <strong>Repetir Contraseña</strong></label>
+                <label for="repeatPassword" class="form-label"> <strong>Repetir Contraseña *</strong></label>
                 <div class="input-group">
                     <input :type="showRepeatPassword ? 'text' : 'password'" id="repeatPassword" v-model="form.repeatPassword" class="form-control" required autocomplete="new-password" />
                     <button type="button" class="btn btn-outline-secondary" @click="showRepeatPassword = !showRepeatPassword" tabindex="-1">

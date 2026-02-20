@@ -47,31 +47,31 @@ const volver = () => {
     <h1 class="mb-4">Crear Territorio</h1>
     <form @submit.prevent="crearTerritorio" class="row g-3">
       <div class="col-md-6">
-        <label class="form-label"><strong>Nombre</strong></label>
+        <label class="form-label"><strong>Nombre *</strong></label>
         <input v-model="form.nombre" type="text" class="form-control" required />
       </div>
       <div class="col-md-6">
-        <label class="form-label"><strong>Área</strong></label>
-        <input v-model="form.area" type="number" class="form-control" min="0" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label"><strong>Estado</strong></label>
+        <label class="form-label"><strong>Estado *</strong></label>
         <select v-model="form.estado" class="form-select">
           <option v-for="e in estados" :key="e.value" :value="e.value">{{ e.label }}</option>
         </select>
       </div>
       <div class="col-md-6">
-        <label class="form-label"><strong>Prioridad</strong></label>
+        <label class="form-label"><strong>Prioridad *</strong></label>
         <select v-model="form.prioridad" class="form-select">
           <option v-for="p in prioridades" :key="p" :value="p">{{ p }}</option>
         </select>
       </div>
       <div class="col-md-6">
-        <label class="form-label"><strong>Última Salida</strong></label>
+        <label class="form-label"><strong>Última Salida *</strong></label>
         <input v-model="form.ultimaSalida" type="date" class="form-control" />
       </div>
+      <div class="col-md-6">
+        <label class="form-label"><strong>Área m² (Opcional)</strong></label>
+        <input v-model="form.area" type="number" class="form-control" min="0" />
+      </div>
       <div class="col-12">
-        <label class="form-label"><strong>GeoJson</strong></label>
+        <label class="form-label"><strong>GeoJson (Opcional)</strong></label>
         <textarea v-model="form.geoJson" class="form-control" rows="2" placeholder="Pegue aquí el GeoJson si lo tiene..."></textarea>
       </div>
       <div class="col-12 d-flex justify-content-end gap-2">

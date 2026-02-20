@@ -283,7 +283,11 @@ const crearReporte = async () => {
   await territorioStore.updateTerritorio(territorioId, {
     estado: Number(form.value.estadoTerritorio),
     geoJson: form.value.geoJsonFaltante || null
-});
+  });
+
+  await store.updateSalida(form.value.salidaId, {
+    activo: false
+  });
 
   form.value = {
     salidaId: "",
