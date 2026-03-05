@@ -8,21 +8,26 @@ export const useSalidaStore = defineStore('salida', {
         salida: null,
         salidasSemanales: [],
         cargandoExcel: false,
+        error: null,
     }),
     actions: {
         async fetchSalidas() {
             try {
                 const response = await api.getSalidas();
                 this.salidas = response.data;
+                this.error = null;
             } catch (error) {
                 console.error('Error fetching salidas:', error);
+                this.error = ' No se pudieron cargar las salidas.';
             }
         },
         async fetchSalida(id) {
             try {
                 const response = await api.getSalida(id);
                 this.salida = response.data;
+                this.error = null;
             } catch (error) {
+                this.error = ` No se pudo cargar la salida con id ${id}.`;
                 console.error(`Error fetching salida with id ${id}:`, error);
             }
         },
@@ -30,8 +35,10 @@ export const useSalidaStore = defineStore('salida', {
             try {
                 const response = await api.createSalida(data);
                 this.salidas.push(response.data);
+                this.error = null;
             } catch (error) {
                 console.error('Error creating salida:', error);
+                this.error = ' No se pudo crear la salida.';
             }
         },
         async updateSalida(id, data) {
@@ -41,15 +48,19 @@ export const useSalidaStore = defineStore('salida', {
                 if (index !== -1) {
                     this.salidas[index] = response.data;
                 }
+                this.error = null;
             } catch (error) {
                 console.error(`Error updating salida with id ${id}:`, error);
+                this.error = ` No se pudo actualizar la salida con id ${id}.`;
             }
         },
         async deleteSalida(id) {
             try {
                 await api.deleteSalida(id);
                 this.salidas = this.salidas.filter(s => s.id !== id);
+                this.error = null;
             } catch (error) {
+                this.error = ` No se pudo eliminar la salida con id ${id}.`;
                 console.error(`Error deleting salida with id ${id}:`, error);
             }
         },
@@ -57,16 +68,20 @@ export const useSalidaStore = defineStore('salida', {
             try {
                 const response = await api.getSalidasSemanal();
                 this.salidasSemanales = response.data;
+                this.error = null;
             } catch (error) {
                 console.error('Error fetching salidas semanal:', error);
+                this.error = ' No se pudieron cargar las salidas semanal.';
             }
         },
         async fetchSalidaSemanal(id) {
             try {
                 const response = await api.getSalidaSemanal(id);
+                this.error = null;
                 return response.data;
             } catch (error) {
                 console.error(`Error fetching salida semanal with id ${id}:`, error);
+                this.error = ` No se pudo cargar la salida semanal con id ${id}.`;
                 return null;
             }
         },
@@ -74,8 +89,10 @@ export const useSalidaStore = defineStore('salida', {
             try {
                 const response = await api.createSalidaSemanal(data);
                 this.salidasSemanales.push(response.data);
+                this.error = null;
             } catch (error) {
                 console.error('Error creating salida semanal:', error);
+                this.error = ' No se pudo crear la salida semanal.';
             }
         },
         getSalidaSemanalPorId(id) {
@@ -101,9 +118,11 @@ export const useSalidaStore = defineStore('salida', {
                 // 4. Limpieza
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url); 
+                this.error = null;
             } catch (error) {
                 console.error('Error al descargar:', error);
                 alert('No se pudo descargar el archivo');
+                this.error = ' No se pudo descargar el archivo.';
             } finally {
                 this.cargandoExcel = false;
             }

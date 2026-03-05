@@ -31,7 +31,7 @@ const volver = () => {
 </script>
 <template>
     <div class="container py-4">
-        <h1 class="mb-4 ">Crear Usuario</h1>
+        <h1 class="mb-4 ">Crear Conductor</h1>
         <form @submit.prevent="crearUsuario" class="row g-3">
             <div class="col-md-6">
                 <label for="nombre" class="form-label"> <strong>Nombre *</strong></label>

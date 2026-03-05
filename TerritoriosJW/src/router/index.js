@@ -7,6 +7,7 @@ import ListUsuarios from '../views/ListUsuarios.vue';
 import CrearSalida from '../views/CrearSalida.vue';
 import ReportarSalida from '../views/ReportarSalida.vue';
 import Territorio from '../views/Territorio.vue';
+import UpdateTerritorio from '../views/UpdateTerritorio.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -55,6 +56,11 @@ const router = createRouter({
             path: '/territorio/:id',
             name: 'Territorio',
             component: Territorio,
+        },
+        {
+            path: '/update-terrirorio/:id',
+            name: 'UpdateTerritorio',
+            component: UpdateTerritorio,
         }
     ]
 });

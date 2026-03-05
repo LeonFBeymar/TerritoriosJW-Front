@@ -71,6 +71,11 @@ const crearSalida = async () => {
   // (evita que `toISOString()` convierta a UTC y cambie la hora)
   const horaSalidaIso = `${form.value.fechaSalida}T${hh}:${mm}:00`;
 
+  await territorioStore.updateTerritorio(form.value.territorioId, {
+    estado: 2, // Cambiar estado a "Pendiente" al crear una salida
+    ultimaSalida: form.value.fechaSalida // Actualizar última salida con la fecha seleccionada
+  });
+  
   await salidaStore.createSalida({
     usuarioIds,
     territorioId: form.value.territorioId,
@@ -80,10 +85,6 @@ const crearSalida = async () => {
     observaciones: form.value.observaciones
   });
 
-  await territorioStore.updateTerritorio(form.value.territorioId, {
-    estado: 2, // Cambiar estado a "Pendiente" al crear una salida
-    ultimaSalida: form.value.fechaSalida // Actualizar última salida con la fecha seleccionada
-  });
 
   form.value = { conductor1: '', conductor2: '', territorioId: '', salidaSemanalId: '', puntoEncuentro: '', fechaSalida: '', horaSalidaHour: '', horaSalidaMinute: '', observaciones: '' };
   agregarSegundoConductor.value = false;

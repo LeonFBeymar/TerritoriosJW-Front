@@ -10,7 +10,8 @@ const form = ref({
   area: null,
   estado: 1,
   prioridad: 1,
-  ultimaSalida: ''
+  ultimaSalida: '',
+  atributo1: '',
 });
 
 const estados = [
@@ -30,10 +31,11 @@ const crearTerritorio = async () => {
     Area: form.value.area ? Number(form.value.area) : null,
     Estado: Number(form.value.estado),
     Prioridad: Number(form.value.prioridad),
-    UltimaSalida: form.value.ultimaSalida || null
+    UltimaSalida: form.value.ultimaSalida || null,
+    Atributo1: form.value.atributo1 || null,
   });
   // Limpiar formulario o redirigir según necesidad
-  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, ultimaSalida: '' };
+  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, ultimaSalida: '', atributo1: '' };
   volver();
 };
 
@@ -52,19 +54,27 @@ const volver = () => {
       </div>
       <div class="col-md-6">
         <label class="form-label"><strong>Estado *</strong></label>
-        <select v-model="form.estado" class="form-select">
+        <select v-model="form.estado" class="form-select" required>
           <option v-for="e in estados" :key="e.value" :value="e.value">{{ e.label }}</option>
         </select>
       </div>
       <div class="col-md-6">
         <label class="form-label"><strong>Prioridad *</strong></label>
-        <select v-model="form.prioridad" class="form-select">
-          <option v-for="p in prioridades" :key="p" :value="p">{{ p }}</option>
+        <select v-model="form.prioridad" class="form-select" required>
+           <option :value="1">(Lu-Vi)</option>
+                        <option :value="2">(Sa-Do)</option>
+                        <option :value="3">(Lu-Vi-Mes)</option>
+                        <option :value="4">(Sa-Do-Mes)</option>
+                        <option :value="5">General (Pub-Car-Rev-Reu)</option>
         </select>
       </div>
       <div class="col-md-6">
         <label class="form-label"><strong>Última Salida *</strong></label>
-        <input v-model="form.ultimaSalida" type="date" class="form-control" />
+        <input v-model="form.ultimaSalida" type="date" class="form-control" required/>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label"><strong>Notas adicionales (Opcional)</strong></label>
+        <input v-model="form.atributo1" type="text" class="form-control" />
       </div>
       <div class="col-md-6">
         <label class="form-label"><strong>Área m² (Opcional)</strong></label>

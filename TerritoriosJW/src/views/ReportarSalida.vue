@@ -280,14 +280,14 @@ const crearReporte = async () => {
     notas: form.value.notas,
   });
 
+  await store.updateSalida(form.value.salidaId, {
+    activo: false
+  });
   await territorioStore.updateTerritorio(territorioId, {
     estado: Number(form.value.estadoTerritorio),
     geoJson: form.value.geoJsonFaltante || null
   });
 
-  await store.updateSalida(form.value.salidaId, {
-    activo: false
-  });
 
   form.value = {
     salidaId: "",
@@ -301,7 +301,7 @@ const crearReporte = async () => {
 </script>
 <template>
   <div v-if="!reportado" class="container">
-    <h1 class="mb-4 text-primary">Reportar Salida</h1>
+    <h1 class="mb-4 py-4"> <span>Reportar Salida</span></h1>
     <form @submit.prevent="crearReporte" class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Estado del Territorio</label>
@@ -354,7 +354,7 @@ const crearReporte = async () => {
     </form>
   </div>
   <div v-else class="container">
-    <h1 class="mb-4 text-primary">Reporte de Salida</h1>
+    <h1 class="mb-1 py-4"> <span>Reporte de Salida</span></h1>
     <p>
       <strong>Estado del Territorio:</strong>
       {{
@@ -364,7 +364,7 @@ const crearReporte = async () => {
     </p>
     <p>
       <strong>GeoJson Faltante:</strong>
-      {{ reporte.geoJsonFaltante || "N/A" }}
+      {{ reporte.geoJsonFaltante || "Sin datos" }}
     </p>
     <p>
       <strong>Notas Adicionales:</strong> {{ reporte.notas || "Sin Notas" }}

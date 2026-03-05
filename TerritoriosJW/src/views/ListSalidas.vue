@@ -11,6 +11,7 @@ const territorioStore = useTerritorioStore();
 const reporteStore = useReporteStore();
 const router = useRouter();
 const showModal = ref(false);
+const error = ref(null);
 const form = ref({
   fechaInicio: "",
 });
@@ -27,6 +28,7 @@ onMounted(async () => {
   await usuarioStore.fetchUsuarios();
   await territorioStore.fetchTerritorios();
   await reporteStore.fetchReportes();
+  error.value = store.error;
 });
 
 const crearSalidaSemanal = async () => {
@@ -48,7 +50,7 @@ const reportar = (salidaId, territorioId) => {
 };
 </script>
 <template>
-  <div class="container py-4">
+  <div class="container col-8 py-4">
     <div class="container-fluid container-md py-3 py-md-4">
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
     
@@ -189,6 +191,12 @@ const reportar = (salidaId, territorioId) => {
         </div>
       </div>
     </div>
+    <div v-if="store.salidas.length === 0 && !error" class="alert alert-info">
+      No hay salidas registradas.
+    </div>
+    <div v-if="error" class="alert alert-danger">
+      {{ error }}
+      </div>
   </div>
 
   <!-- Modal -->
