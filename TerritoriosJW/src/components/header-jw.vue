@@ -50,7 +50,7 @@ const territorios = () => {
             class="btn btn-outline-light border-0 px-3 fw-medium transition-all" 
             @click="usuarios"
           >
-            <i class="bi bi-people me-1"></i> Usuarios
+            <i class="bi bi-people me-1"></i> Conductores
           </button>
         </div>
       </div>

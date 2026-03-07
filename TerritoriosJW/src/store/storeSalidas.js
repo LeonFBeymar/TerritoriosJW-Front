@@ -9,59 +9,77 @@ export const useSalidaStore = defineStore('salida', {
         salidasSemanales: [],
         cargandoExcel: false,
         error: null,
+        salidaloading: false,
+        salidaloadingSave: false,
+        salidasSemanalesLoadingSave: false,
     }),
     actions: {
         async fetchSalidas() {
+            this.salidaloading = true;
             try {
                 const response = await api.getSalidas();
                 this.salidas = response.data;
+                this.salidaloading = false;
                 this.error = null;
             } catch (error) {
                 console.error('Error fetching salidas:', error);
+                this.salidaloading = false;
                 this.error = ' No se pudieron cargar las salidas.';
             }
         },
         async fetchSalida(id) {
+            this.salidaloading = true;
             try {
                 const response = await api.getSalida(id);
                 this.salida = response.data;
+                this.salidaloading = false;
                 this.error = null;
             } catch (error) {
                 this.error = ` No se pudo cargar la salida con id ${id}.`;
+                this.salidaloading = false;
                 console.error(`Error fetching salida with id ${id}:`, error);
             }
         },
         async createSalida(data) {
+            this.salidaloadingSave = true;
             try {
                 const response = await api.createSalida(data);
                 this.salidas.push(response.data);
+                this.salidaloadingSave = false;
                 this.error = null;
             } catch (error) {
                 console.error('Error creating salida:', error);
+                this.salidaloadingSave = false;
                 this.error = ' No se pudo crear la salida.';
             }
         },
         async updateSalida(id, data) {
+            this.salidaloadingSave = true;
             try {
                 const response = await api.updateSalida(id, data);
                 const index = this.salidas.findIndex(s => s.id === id);
                 if (index !== -1) {
                     this.salidas[index] = response.data;
                 }
+                this.salidaloadingSave = false;
                 this.error = null;
             } catch (error) {
                 console.error(`Error updating salida with id ${id}:`, error);
+                this.salidaloadingSave = false;
                 this.error = ` No se pudo actualizar la salida con id ${id}.`;
             }
         },
         async deleteSalida(id) {
+            this.salidaloadingSave = true;
             try {
                 await api.deleteSalida(id);
                 this.salidas = this.salidas.filter(s => s.id !== id);
+                this.salidaloadingSave = false;
                 this.error = null;
             } catch (error) {
-                this.error = ` No se pudo eliminar la salida con id ${id}.`;
                 console.error(`Error deleting salida with id ${id}:`, error);
+                this.salidaloadingSave = false;
+                this.error = ` No se pudo eliminar la salida con id ${id}.`;
             }
         },
         async fetchSalidasSemanal() {
@@ -86,12 +104,15 @@ export const useSalidaStore = defineStore('salida', {
             }
         },
         async createSalidaSemanal(data) {
+            this.salidasSemanalesLoadingSave = true;
             try {
                 const response = await api.createSalidaSemanal(data);
                 this.salidasSemanales.push(response.data);
+                this.salidasSemanalesLoadingSave = false;
                 this.error = null;
             } catch (error) {
                 console.error('Error creating salida semanal:', error);
+                this.salidasSemanalesLoadingSave = false;
                 this.error = ' No se pudo crear la salida semanal.';
             }
         },

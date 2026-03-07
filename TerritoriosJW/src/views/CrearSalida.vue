@@ -175,7 +175,7 @@ const volver = () => {
       </div>
       <div class="col-12 d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
-        <button type="submit" class="btn btn-primary">Crear Salida</button>
+        <button type="submit" class="btn btn-primary">{{ salidaStore.salidaloadingSave ? 'Creando...' : 'Crear Salida' }}</button>
       </div>
     </form>
   </div>

@@ -42,7 +42,16 @@ const editar = (id) => {
             </button>
         </div>
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4" v-for="territorio in store.territorios" :key="territorio.id">
+            <div v-if="store.territorioloading && !error" class="alert alert-info mt-4">
+                <i class="bi bi-info-circle me-2"></i>Cargando territorios...
+            </div>
+            <div v-else-if="!store.territorioloading && store.territorios.length === 0 && !error" class="alert alert-info mt-4">
+                <i class="bi bi-info-circle me-2"></i>No hay territorios registrados.
+            </div>
+            <div v-else-if="error" class="alert alert-danger mt-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+            <div v-else class="col-md-6 col-lg-4" v-for="territorio in store.territorios" :key="territorio.id">
                 <div class="card h-100 shadow-sm border-1">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div class="mb-2" @click="territorioView(territorio.id)" style="cursor:pointer">
@@ -67,12 +76,6 @@ const editar = (id) => {
                         </div>
                     </div>
                 </div>
-            </div>
-            <div v-if="store.territorios.length === 0 && !error" class="alert alert-info mt-4">
-                <i class="bi bi-info-circle me-2"></i>No hay territorios registrados.
-            </div>
-            <div v-if="error" class="alert alert-danger mt-4">
-                <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
             </div>
         </div>
     </div>

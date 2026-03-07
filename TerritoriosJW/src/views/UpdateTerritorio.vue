@@ -38,6 +38,7 @@ const actualizarTerritorio = async () => {
     ultimaSalida: form.value.ultimaSalida,
     atributo1: form.value.atributo1,
   });
+
   router.push('/territorios');
 };
 
@@ -46,9 +47,10 @@ const actualizarTerritorio = async () => {
     <div class="container py-4">
         <h1 class="mb-4 d-flex align-items-center">
             <span class="me-2"><i class="bi bi-pencil-square"></i></span>
-            Actualizar Territorio <span v-if="territorio">: <strong>{{ territorio.nombre }}</strong></span>
+            Actualizar Territorio <span v-if="territorio">: <strong>{{ store.territorioloading ? '...' : territorio.nombre }}</strong></span>
         </h1>
-        <div v-if="error" class="alert alert-danger">{{ error }}</div>
+        <div v-if="store.territorioloading" class="alert alert-info">Cargando territorio...</div>
+        <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
         <form v-else @submit.prevent="actualizarTerritorio" class="bg-white p-4 rounded shadow-sm">
             <div class="row g-3">
                 <div class="col-md-6">
@@ -96,7 +98,7 @@ const actualizarTerritorio = async () => {
             </div>
             <div class="mt-4 d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-save me-2"></i>Actualizar
+                    <i class="bi bi-save me-2"></i>{{store.territorioloadingSave ? 'Actualizando...' : 'Actualizar Cambios'}}
                 </button>
                 <button type="button" class="btn btn-secondary ms-2 px-4" @click="router.push('/territorios')">
                     <i class="bi bi-x-circle me-2"></i>Cancelar

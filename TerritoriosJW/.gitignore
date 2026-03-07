@@ -23,9 +23,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-
 *.tsbuildinfo
-
+/public/*.png
 .eslintcache
 
 # Cypress

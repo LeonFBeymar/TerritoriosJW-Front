@@ -22,7 +22,13 @@ const estados = [
   { value: 5, label: 'Completo' }
 ];
 
-const prioridades = [1, 2, 3, 4, 5];
+const prioridades = {
+                1: '(Lu-Vi)',
+                2: '(Sa-Do)',
+                3: '(Lu-Vi-Mes)',
+                4: '(Sa-Do-Mes)',
+                5: 'General (Pub-Car-Rev-Reu)',
+            };
 
 const crearTerritorio = async () => {
   await store.createTerritorio({
@@ -61,11 +67,7 @@ const volver = () => {
       <div class="col-md-6">
         <label class="form-label"><strong>Prioridad *</strong></label>
         <select v-model="form.prioridad" class="form-select" required>
-           <option :value="1">(Lu-Vi)</option>
-                        <option :value="2">(Sa-Do)</option>
-                        <option :value="3">(Lu-Vi-Mes)</option>
-                        <option :value="4">(Sa-Do-Mes)</option>
-                        <option :value="5">General (Pub-Car-Rev-Reu)</option>
+          <option v-for="(label, value) in prioridades" :key="value" :value="value">{{ label }}</option>
         </select>
       </div>
       <div class="col-md-6">
@@ -86,7 +88,7 @@ const volver = () => {
       </div>
       <div class="col-12 d-flex justify-content-end gap-2">
          <button type="button" class="btn btn-secondary" @click="volver()">Volver</button>
-        <button type="submit" class="btn btn-primary">Crear Territorio</button>
+        <button type="submit" class="btn btn-primary">{{ store.territorioloadingSave ? 'Creando...' : 'Crear Territorio' }}</button>
       </div>
     </form>
   </div>
