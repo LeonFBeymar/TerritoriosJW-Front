@@ -57,9 +57,9 @@ const crearSalidaSemanal = async () => {
 const crear = () => {
   router.push("/crear-salida");
 };
-const editar = () => {
+const editar = (id) => {
   // Lógica para editar la salida
-  alert("Funcionalidad de edición no implementada aún.");
+  router.push(`/update-salida/${id}`);
 };
 const reportar = (salidaId, territorioId) => {
   // Lógica para reportar la salida
@@ -201,7 +201,7 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
 
                 <div v-if="reportesInicializados && !reporteStore.reporteLoading" class="col-12 mb-2 d-flex gap-2">
                   <div v-if="!tieneReporte(salida.id)">
-                    <button class="btn btn-primary" type="button" @click="editar">Editar</button>
+                    <button class="btn btn-primary" type="button" @click="editar(salida.id)">Editar</button>
                   </div>
 
                   <div v-if="!tieneReporte(salida.id)">

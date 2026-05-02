@@ -1,108 +1,156 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useSalidaStore } from '../store/storeSalidas';
 import { useUsuarioStore } from '../store/storeUsuarios';
 import { useTerritorioStore } from '../store/storeTerritorio';
-import { useSalidaStore } from '../store/storeSalidas';
 import { useRouter } from 'vue-router';
-
+const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
 const territorioStore = useTerritorioStore();
-const salidaStore = useSalidaStore();
 const router = useRouter();
-
+const salidaId = router.currentRoute.value.params.id;
+const salida = ref(null);
 const form = ref({
   conductor1: '',
   conductor2: '',
   territorioId: '',
   salidaSemanalId: '',
   puntoEncuentro: '',
-  tema: 1, // Valor por defecto para campaña
   fechaSalida: '',
   horaSalidaHour: '',
   horaSalidaMinute: '',
-  observaciones: '', // Usado como campo de grupo/s por ahora
+  observaciones: '',
+  tema: 1, // Valor por defecto para campaña
 });
 const agregarSegundoConductor = ref(false);
 
-// Watchers para mantener consistencia y limpiar duplicados o valores inválidos
-watch([() => form.value.conductor1, () => form.value.conductor2, agregarSegundoConductor], ([c1, c2, add2], [oldC1, oldC2, oldAdd2]) => {
-  // Si el checkbox se desmarca, limpiar conductor2
-  if (!add2 && oldAdd2) {
-    form.value.conductor2 = '';
+const territoriosParaEditar = computed(() => {
+  const disponibles = territorioStore.getTerritoriosDisponibles();
+  const territorioActual = territorioStore.getTerritorioPorId(form.value.territorioId);
+  if (!territorioActual) {
+    return disponibles;
   }
 
-  // Si ambos están seleccionados y son iguales, limpiar el segundo
-  if (add2 && c1 && c2 && c1 === c2) {
+  const yaIncluido = disponibles.some((territorio) => territorio.id === territorioActual.id);
+  if (yaIncluido) {
+    return disponibles;
+  }
+
+  return [territorioActual, ...disponibles];
+});
+
+watch(agregarSegundoConductor, (nuevoValor, valorAnterior) => {
+  if (!nuevoValor && valorAnterior) {
+    form.value.conductor2 = '';
+  }
+});
+
+watch([() => form.value.conductor1, () => form.value.conductor2], ([conductor1, conductor2]) => {
+  if (agregarSegundoConductor.value && conductor1 && conductor2 && conductor1 === conductor2) {
     form.value.conductor2 = '';
   }
 });
 
 onMounted(async () => {
-  await usuarioStore.fetchUsuarios();
-  await territorioStore.fetchTerritorios();
-  await salidaStore.fetchSalidasSemanal();
+  await Promise.all([
+    store.fetchSalidas(),
+    store.fetchSalidasSemanal(),
+    usuarioStore.fetchUsuarios(),
+    territorioStore.fetchTerritorios()
+  ]);
+  await store.fetchSalida(salidaId);
+  salida.value = store.salida;
+
+  if (salida.value) {
+    const usuarioIds = salida.value.usuarioIds || [];
+    form.value.conductor1 = usuarioIds[0] || '';
+    form.value.conductor2 = usuarioIds[1] || '';
+    form.value.territorioId = salida.value.territorioId;
+    form.value.salidaSemanalId = salida.value.salidaSemanalId;
+    form.value.puntoEncuentro = salida.value.puntoEncuentro;
+    form.value.observaciones = salida.value.observaciones || '';
+
+    if (salida.value.horaSalida) {
+      const fechaHora = new Date(salida.value.horaSalida);
+      const year = fechaHora.getFullYear();
+      const month = String(fechaHora.getMonth() + 1).padStart(2, '0');
+      const day = String(fechaHora.getDate()).padStart(2, '0');
+
+      form.value.fechaSalida = `${year}-${month}-${day}`;
+      form.value.horaSalidaHour = fechaHora.getHours();
+      form.value.horaSalidaMinute = fechaHora.getMinutes();
+    }
+
+    agregarSegundoConductor.value = Boolean(form.value.conductor2);
+    form.value.observaciones = salida.value.observaciones || '';
+    form.value.tema = salida.value.tema || 1;
+  }
 });
 
-const crearSalida = async () => {
-  // Validación extra para asegurar que no se envíen ids duplicados
+const editar = async () => {
   if (!form.value.conductor1) {
     alert('Seleccione el conductor principal');
     return;
   }
+
   if (agregarSegundoConductor.value && form.value.conductor2 && form.value.conductor1 === form.value.conductor2) {
     alert('No puede seleccionar el mismo conductor en ambos campos');
     form.value.conductor2 = '';
     return;
   }
 
-  // Construir el array de usuarioIds según los selects
+  if (!form.value.fechaSalida || form.value.horaSalidaHour === '' || form.value.horaSalidaMinute === '') {
+    alert('Seleccione fecha y hora de salida válidas');
+    return;
+  }
+
   const usuarioIds = [form.value.conductor1];
   if (agregarSegundoConductor.value && form.value.conductor2) {
     usuarioIds.push(form.value.conductor2);
   }
 
-  // Construir la fecha y hora en ISO (backend espera ISO). Validar fecha/hora
-  if (!form.value.fechaSalida || form.value.horaSalidaHour === '' || form.value.horaSalidaMinute === '') {
-    alert('Seleccione fecha y hora de salida válidas');
-    return;
-  }
   const hh = String(form.value.horaSalidaHour).padStart(2, '0');
   const mm = String(form.value.horaSalidaMinute).padStart(2, '0');
-  // Construir string de fecha/hora en formato ISO local sin conversión de zona
-  // (evita que `toISOString()` convierta a UTC y cambie la hora)
   const horaSalidaIso = `${form.value.fechaSalida}T${hh}:${mm}:00`;
 
   await territorioStore.updateTerritorio(form.value.territorioId, {
-    estado: 2, // Cambiar estado a "Pendiente" al crear una salida
-    ultimaSalida: form.value.fechaSalida, // Actualizar última salida con la fecha seleccionada
-    tema: form.value.tema // Actualizar campaña del territorio con la seleccionada en la salida
+    estado: 2,
+    ultimaSalida: form.value.fechaSalida,
+    // tema: Number(form.value.tema)
   });
-  
-  await salidaStore.createSalida({
+
+  const parsedId = Number(salidaId);
+  const salidaIdToUpdate = Number.isNaN(parsedId) ? salidaId : parsedId;
+
+  await store.updateSalida(salidaIdToUpdate, {
     usuarioIds,
     territorioId: form.value.territorioId,
     salidaSemanalId: form.value.salidaSemanalId,
     puntoEncuentro: form.value.puntoEncuentro,
     horaSalida: horaSalidaIso,
-    observaciones: form.value.observaciones,
-    tema: form.value.tema, // Enviar campaña seleccionada
+    observaciones: form.value.observaciones, // Usado como grupo/s por ahora
+    tema: form.value.tema // Enviar campaña seleccionada
   });
 
+  if (store.error) {
+    alert(store.error);
+    return;
+  }
 
-  form.value = { conductor1: '', conductor2: '', territorioId: '', salidaSemanalId: '', puntoEncuentro: '', fechaSalida: '', horaSalidaHour: '', horaSalidaMinute: '', observaciones: '', tema: 1 };
-  agregarSegundoConductor.value = false;
   router.push('/salidas');
 };
-
-const volver = () => {
-  router.push('/salidas');
-};
+const volver = () => router.push("/salidas");
 </script>
-
 <template>
-  <div class="container py-4">
-    <h1 class="mb-4">Crear Salida</h1>
-    <form @submit.prevent="crearSalida" class="row g-3">
+    <div class="container py-4">
+        <h1 class="mb-4 d-flex align-items-center">
+            <span class="me-2"><i class="bi bi-eye"></i></span>
+          Editar Salida <span v-if="salida">: <strong>#{{ store.salidaloading ? '...' : salida.id }}</strong></span>
+        </h1>
+        <div v-if="store.salidaloading" class="alert alert-info">Cargando salida...</div>
+        <div v-else-if="!salida" class="alert alert-danger">Salida no encontrada</div>
+        <div v-else class="bg-white p-4 rounded shadow-sm">
+    <form @submit.prevent="editar" class="row g-3">
       <div class="col-md-6">
         <label class="form-label"> <strong>Conductor principal *</strong></label>
         <select v-model="form.conductor1" class="form-select" required>
@@ -131,22 +179,18 @@ const volver = () => {
         <label class="form-label"> <strong>Territorio *</strong></label>
         <select v-model="form.territorioId" class="form-select" required>
           <option value="" disabled>Seleccione un territorio</option>
-         <option 
-          v-for="territorio in territorioStore.getTerritoriosDisponibles()" 
-          :key="territorio.id" 
-          :value="territorio.id"
-        >
-          {{ territorio.nombre.padEnd(20, ' ') }} 
-        {{ territorioStore.getNombrePrioridad(territorio.prioridad) }} 
-          » 🕒{{ territorio.ultimaSalida }}
-        </option>
+          <option v-for="territorio in territoriosParaEditar" :key="territorio.id" :value="territorio.id">
+            {{ territorio.nombre.padEnd(20, ' ') }} 
+            {{ territorioStore.getNombrePrioridad(territorio.prioridad) }} 
+              » 🕒{{ territorio.ultimaSalida }}
+          </option>
         </select>
       </div>
       <div class="col-md-6">
         <label class="form-label"> <strong>Semana de Salida *</strong></label>
         <select v-model="form.salidaSemanalId" class="form-select" required>
           <option value="" disabled>Seleccione una semana</option>
-          <option v-for="semana in salidaStore.salidasSemanales" :key="semana.id" :value="semana.id">
+          <option v-for="semana in store.salidasSemanales" :key="semana.id" :value="semana.id">
             {{ semana.semanaInicio }}
           </option>
         </select>
@@ -189,11 +233,12 @@ const volver = () => {
         <label class="form-label"> <strong>Grupo/s(Opcional)</strong></label> 
         <input v-model="form.observaciones" class="form-control" type="text" placeholder="Todos"/>
       </div>
-
       <div class="col-12 d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
-        <button type="submit" class="btn btn-primary">{{ salidaStore.salidaloadingSave ? 'Creando...' : 'Crear Salida' }}</button>
+        <button type="submit" class="btn btn-primary">{{ store.salidaloadingSave ? 'Actualizando...' : 'Actualizar' }}</button>
       </div>
     </form>
-  </div>
+        </div>
+
+    </div>
 </template>

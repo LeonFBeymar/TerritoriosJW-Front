@@ -16,7 +16,6 @@ onMounted(async () => {
   // OJO: Si el store devuelve un objeto plano, no uses .value después.
   territorio.value = store.getTerritorioPorId(Number(territorioId));
   imagen.value = await store.getTerritorioImagen(territorioId);
-  console.log("imgaen recibida:", imagen.value);
   if (!imagen.value) {
     console.error("No se recibió URL de imagen");
     return;
@@ -174,6 +173,22 @@ const descargarImagen = async () => {
           </p>
         </div>
 
+        <div class="mb-3">
+          <p>
+            <strong>Campaña:</strong>
+            <span class="ms-2 italic">{{
+              store.getNombreTema(territorio?.tema) || "Sin Campaña"
+            }}</span>
+          </p>
+        </div>
+        <div class="mb-3">
+          <p>
+            <strong>Notas Adicionales:</strong>
+            <span class="ms-2 text-secondary italic">{{
+              territorio?.atributo1 || "Sin Notas"
+            }}</span>
+          </p>
+        </div>
         <div class="mb-2">
           <p>
             <strong>Área:</strong>
@@ -188,14 +203,6 @@ const descargarImagen = async () => {
             <code class="ms-2 text-muted small">{{
               territorio?.geoJson || "Sin datos"
             }}</code>
-          </p>
-        </div>
-        <div class="mb-3">
-          <p>
-            <strong>Notas Adicionales:</strong>
-            <span class="ms-2 text-secondary italic">{{
-              territorio?.atributo1 || "Sin Notas"
-            }}</span>
           </p>
         </div>
       </div>

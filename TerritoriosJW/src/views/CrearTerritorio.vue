@@ -12,6 +12,7 @@ const form = ref({
   prioridad: 1,
   ultimaSalida: '',
   atributo1: '',
+  tema: '',
 });
 
 const estados = [
@@ -30,6 +31,15 @@ const prioridades = {
                 5: 'General (Pub-Car-Rev-Reu)',
             };
 
+const temas = {
+  1: 'Predicación',
+  2: 'Invitación a Reunión',
+  3: 'Invitación a  Asamblea',
+  4: 'Invitación a Conmemoración',
+  5: 'Nuevo Tratado',
+  6: 'Conseguir Estudios',
+  7: 'Otro Servicio',
+}
 const crearTerritorio = async () => {
   await store.createTerritorio({
     Nombre: form.value.nombre,
@@ -39,9 +49,10 @@ const crearTerritorio = async () => {
     Prioridad: Number(form.value.prioridad),
     UltimaSalida: form.value.ultimaSalida || null,
     Atributo1: form.value.atributo1 || null,
+    Tema: form.value.tema || null,
   });
   // Limpiar formulario o redirigir según necesidad
-  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, ultimaSalida: '', atributo1: '' };
+  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, ultimaSalida: '', atributo1: '', tema: '' };
   volver();
 };
 
@@ -73,6 +84,12 @@ const volver = () => {
       <div class="col-md-6">
         <label class="form-label"><strong>Última Salida *</strong></label>
         <input v-model="form.ultimaSalida" type="date" class="form-control" required/>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label"><strong>Campaña *</strong></label>
+        <select v-model="form.tema" class="form-select" required>
+          <option v-for="(label, value) in temas" :key="value" :value="value">{{ label }}</option>
+        </select>
       </div>
       <div class="col-md-6">
         <label class="form-label"><strong>Notas adicionales (Opcional)</strong></label>

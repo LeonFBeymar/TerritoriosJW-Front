@@ -13,7 +13,7 @@ const store = useSalidaStore();
 const reporteStore = useReporteStore();
 const territorioStore = useTerritorioStore();
 const router = useRouter();
-
+const salidaR = ref(null);
 const territorioId = router.currentRoute.value.params.territorioId;
 const reportado = ref(false);
 const reporte = ref(null);
@@ -29,7 +29,9 @@ const drawnGeoJson = ref("");
 onMounted(async () => {
   await store.fetchSalidas();
   await reporteStore.fetchReportes();
-  
+  await store.fetchSalida(router.currentRoute.value.params.id);
+  console.log(router.currentRoute.value.params.id);
+  console.log("Salida obtenida:", store.salida.tema);
   reporte.value = reporteStore.getReporteByIdSalida(
     router.currentRoute.value.params.id,
   );
@@ -262,14 +264,6 @@ const volver = () => {
   router.push("/salidas");
 };
 
-const estados = [
-  { value: 1, label: "En espera" },
-  { value: 2, label: "Pendiente" },
-  { value: 3, label: "Pendiente Incompleto" },
-  { value: 4, label: "Incompleto" },
-  { value: 5, label: "Completo" },
-];
-
 const crearReporte = async () => {
   form.value.salidaId = router.currentRoute.value.params.id;
 
@@ -285,7 +279,8 @@ const crearReporte = async () => {
   });
   await territorioStore.updateTerritorio(territorioId, {
     estado: Number(form.value.estadoTerritorio),
-    geoJson: form.value.geoJsonFaltante || null
+    geoJson: form.value.geoJsonFaltante || null,
+    tema: store.salida.tema || 1, // Mantener la campaña del territorio según la salida
   });
 
 
@@ -307,8 +302,8 @@ const crearReporte = async () => {
         <label class="form-label">Estado del Territorio</label>
         <select v-model="form.estadoTerritorio" class="form-select" required>
           <option value="" disabled>Seleccione el estado del territorio</option>
-          <option v-for="e in estados" :key="e.value" :value="e.value">
-            {{ e.label }}
+          <option v-for="(label, value) in territorioStore.estadosForReporte" :key="value" :value="value">
+            {{ label }}
           </option>
         </select>
       </div>
@@ -361,6 +356,10 @@ const crearReporte = async () => {
         territorioStore.getNombreEstado(Number(reporte.estadoTerritorio)) ||
         "N/A"
       }}
+    </p>
+    <p>
+      <strong>Campaña:</strong>
+      {{ territorioStore.getNombreTema(store.salida.tema) || "Sin Campaña" }}
     </p>
     <p>
       <strong>GeoJson Faltante:</strong>

@@ -9,6 +9,35 @@ export const useTerritorioStore = defineStore('territorio', {
         error: null,
         territorioloading: false,
         territorioloadingSave: false,
+        temas: {
+            1: 'Predicación',
+            2: 'Invitación a Reunión',
+            3: 'Invitación a Asamblea',
+            4: 'Invitación a Conmemoración',
+            5: 'Nuevo Tratado',
+            6: 'Conseguir Estudios',
+            7: 'Otro Servicio',
+            },
+        estados:{
+                1: 'En espera',
+                2: 'Pendiente',
+                3: 'Pendiente Incompleto',
+                4: 'Incompleto',
+                5: 'Completo',
+            },
+        estadosForReporte:{
+                3: 'Pendiente Incompleto',
+                4: 'Incompleto',
+                5: 'Completo',
+            },
+        prioridades: {
+                1: '(L-V)',
+                2: '(S-D)',
+                3: '(L-V-Mes)',
+                4: '(S-D-Mes)',
+                5: 'General',
+            },
+
     }),     
     actions: {
         async fetchTerritorios() {
@@ -91,19 +120,31 @@ export const useTerritorioStore = defineStore('territorio', {
         },
         getNombrePrioridad(idPrioridad) {
             const prioridades = {
-                1: '(Lu-Vi)',
-                2: '(Sa-Do)',
-                3: '(Lu-Vi-Mes)',
-                4: '(Sa-Do-Mes)',
-                5: 'General (Pub-Car-Rev-Reu)',
+                1: '(L-V)',
+                2: '(S-D)',
+                3: '(L-V-Mes)',
+                4: '(S-D-Mes)',
+                5: 'General',
             };            
             return prioridades[idPrioridad] || 'Desconocido';
+        },
+        getNombreTema(idTema) {
+            const temas = {
+                    1: 'Predicación',
+                    2: 'Invitación a Reunión',
+                    3: 'Invitación a  Asamblea',
+                    4: 'Invitación a Conmemoración',
+                    5: 'Nuevo Tratado',
+                    6: 'Conseguir Estudios',
+                    7: 'Otro Servicio',
+                };
+            return temas[idTema] || 'Desconocido';
         },
         getTerritorioPorId(id) {
             return this.territorios.find(t => t.id === id);
         },
         getTerritoriosDisponibles() {
-            return this.territorios.filter(t => t.estado === 1 || t.estado === 3 || t.estado === 4 || t.prioridad === 5); // Ejemplo: filtrar por estado "En espera" o "Pendiente Incompleto" o "Incompleto"
+            return this.territorios.filter(t => t.estado === 1 || t.estado === 3 || t.estado === 4 || t.prioridad === 5).sort((a , b ) => a.ultimaSalida.localeCompare(b.ultimaSalida)); // Ejemplo: filtrar por estado "En espera" o "Pendiente Incompleto" o "Incompleto"
         },
         
         getTerritorioImagen(id) {

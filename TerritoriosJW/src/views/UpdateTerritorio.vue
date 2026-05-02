@@ -13,6 +13,7 @@ const form = ref({
     ultimaSalida: '',
     area: null,
     atributo1: '',
+    tema: 1,
 });
 onMounted(async () => {
   await store.fetchTerritorios();
@@ -25,6 +26,7 @@ onMounted(async () => {
     form.value.ultimaSalida = territorio.value.ultimaSalida || '';
     form.value.area = territorio.value.area || null;
     form.value.atributo1 = territorio.value.atributo1 || '';
+    form.value.tema = territorio.value.tema;
   } else {
     error.value = 'Territorio no encontrado';
   }
@@ -36,6 +38,7 @@ const actualizarTerritorio = async () => {
     estado: form.value.estado,
     prioridad: form.value.prioridad,
     ultimaSalida: form.value.ultimaSalida,
+    tema: form.value.tema,
     atributo1: form.value.atributo1,
   });
 
@@ -47,7 +50,7 @@ const actualizarTerritorio = async () => {
     <div class="container py-4">
         <h1 class="mb-4 d-flex align-items-center">
             <span class="me-2"><i class="bi bi-pencil-square"></i></span>
-            Actualizar Territorio <span v-if="territorio">: <strong>{{ store.territorioloading ? '...' : territorio.nombre }}</strong></span>
+            Editar Territorio <span v-if="territorio">: <strong>{{ store.territorioloading ? '...' : territorio.nombre }}</strong></span>
         </h1>
         <div v-if="store.territorioloading" class="alert alert-info">Cargando territorio...</div>
         <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
@@ -56,22 +59,14 @@ const actualizarTerritorio = async () => {
                 <div class="col-md-6">
                     <label for="estado" class="form-label"><strong>Estado*</strong> <i class="bi bi-flag ms-1"></i></label>
                     <select id="estado" v-model.number="form.estado" class="form-select" required>
-                        <option :value="1">En espera</option>
-                        <option :value="2">Pendiente</option>
-                        <option :value="3">Pendiente Incompleto</option>
-                        <option :value="4">Incompleto</option>
-                        <option :value="5">Completo</option>
+                        <option v-for="(label, value) in store.estados" :key="value" :value="value">{{ label }}</option>
                     </select>
                     <div class="form-text">Selecciona el estado actual del territorio.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="prioridad" class="form-label"><strong>Prioridad*</strong> <i class="bi bi-exclamation-triangle ms-1"></i></label>
                     <select id="prioridad" v-model.number="form.prioridad" class="form-select" required>
-                        <option :value="1">(Lu-Vi)</option>
-                        <option :value="2">(Sa-Do)</option>
-                        <option :value="3">(Lu-Vi-Mes)</option>
-                        <option :value="4">(Sa-Do-Mes)</option>
-                        <option :value="5">General (Pub-Car-Rev-Reu)</option>
+                        <option v-for="(label, value) in store.prioridades" :key="value" :value="value">{{ label }}</option>
                     </select>
                     <div class="form-text">Define la prioridad de visita para este territorio.</div>
                 </div>
@@ -79,6 +74,13 @@ const actualizarTerritorio = async () => {
                     <label for="ultimaSalida" class="form-label"><strong>Última Salida*</strong> <i class="bi bi-calendar-event ms-1"></i></label>
                     <input type="date" id="ultimaSalida" v-model="form.ultimaSalida" class="form-control" required/>
                     <div class="form-text">Fecha de la última salida realizada.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="tema" class="form-label"><strong>Campaña*</strong></label>
+                    <select id="tema" v-model.number="form.tema" class="form-select" required>
+                        <option v-for="(label, value) in store.temas" :key="value" :value="value">{{ label }}</option>
+                    </select>
+                    <div class="form-text">Seleccione la campaña para el territorio.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="atributo1" class="form-label"><strong>Notas adicionales</strong> <i class="bi bi-info-circle ms-1"></i></label>
