@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
 
@@ -8,30 +8,66 @@ const router = useRouter();
 const error = ref(null);
 const showEstadosInfo = ref(false);
 const showCampañaInfo = ref(false);
+/* SOLO FILTRO */
+const ordenFecha = ref('');
+const filtroCampaña = ref('');
+const filtroEstado = ref('');
 
 onMounted(async () => {
     await store.fetchTerritorios();
     error.value = store.error;
 });
 
+/* SOLO FILTRAR POR ESTADO */
+const territoriosFiltrados = computed(() => {
+    let lista = [...store.territorios];
+
+    /* FILTRO ESTADO */
+    if (filtroEstado.value !== '') {
+        lista = lista.filter(t =>
+            Number(t.estado) === Number(filtroEstado.value)
+        );
+    }
+
+    /* FILTRO CAMPAÑA */
+    if (filtroCampaña.value !== '') {
+        lista = lista.filter(t =>
+            Number(t.tema) === Number(filtroCampaña.value)
+        );
+    }
+
+    /* ORDEN FECHA */
+    if (ordenFecha.value === 'asc') {
+        lista.sort((a, b) =>
+            new Date(a.ultimaSalida) - new Date(b.ultimaSalida)
+        );
+    }
+
+    if (ordenFecha.value === 'desc') {
+        lista.sort((a, b) =>
+            new Date(b.ultimaSalida) - new Date(a.ultimaSalida)
+        );
+    }
+
+    return lista;
+});
+
 const getBadgeClass = (estado) => {
   const colors = {
-    1: 'bg-secondary', // En espera
-    2: 'bg-warning text-dark', // Pendiente
-    3: 'bg-info text-dark', // Pendiente Incompleto
-    4: 'bg-danger', // Incompleto
-    5: 'bg-success', // Completo
+    1: 'bg-secondary',
+    2: 'bg-warning text-dark',
+    3: 'bg-info text-dark',
+    4: 'bg-danger',
+    5: 'bg-success',
   };
   return colors[estado] || 'bg-light text-dark';
 };
 
 const createTerritorio = () => router.push("/crearterritorio");
 const territorioView = (id) => router.push(`/territorio/${id}`);
-const editar = (id) => {
-  // Lógica para editar el territorio
-  router.push(`/update-terrirorio/${id}`);
-};
+const editar = (id) => router.push(`/update-terrirorio/${id}`);
 </script>
+
 
 <template>
     <div class="container py-4">
@@ -43,6 +79,48 @@ const editar = (id) => {
                 <i class="bi bi-plus-circle me-2"></i>Crear Territorio
             </button>
         </div>
+
+        
+         <!-- 🔍 Barra superior de filtros -->
+                <div class="row g-3 mb-4">
+
+                <!-- Filtrar por estado -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Estado</strong></label>
+                    <select v-model="filtroEstado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="1">En espera</option>
+                    <option value="2">Pendiente</option>
+                    <option value="3">Pendiente incompleto</option>
+                    <option value="4">Incompleto</option>
+                    <option value="5">Completo</option>
+                    </select>
+                </div>
+
+                <!-- Ordenar por fecha -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Ordenar</strong></label>
+                    <select v-model="ordenFecha" class="form-select">
+                    <option value="">Sin ordenar</option>
+                    <option value="asc">Más antigua</option>
+                    <option value="desc">Más reciente</option>
+                    </select>
+                </div>
+
+                <!-- Filtrar por campaña -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Campaña</strong></label>
+                    <select v-model="filtroCampaña" class="form-select">
+                    <option value="">Todas</option>
+                    <option
+                        v-for="(label, value) in store.temas"
+                        :key="value"
+                        :value="value"
+                    >
+                        {{ label }}
+                    </option>
+                    </select>
+                </div>
         <div>
             <button class="btn btn-info mb-3 me-3" @click="showEstadosInfo = !showEstadosInfo">
                 <strong>  
@@ -54,6 +132,9 @@ const editar = (id) => {
                     {{ showCampañaInfo ? 'Ocultar' : 'Ver' }} info de Campaña ℹ️
                 </strong> 
             </button>
+
+
+                </div>
             <div v-if="showEstadosInfo" class="alert alert-info">
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -119,7 +200,7 @@ const editar = (id) => {
             <div v-else-if="error" class="alert alert-danger mt-4">
                 <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
             </div>
-            <div v-else class="col-md-6 col-lg-4" v-for="territorio in store.territorios" :key="territorio.id">
+            <div v-else class="col-md-6 col-lg-4" v-for="territorio in territoriosFiltrados " :key="territorio.id">
                 <div class="card h-100 shadow-sm border-1">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <div class="mb-1" @click="territorioView(territorio.id)" style="cursor:pointer">
