@@ -8,7 +8,7 @@ const router = useRouter();
 const error = ref(null);
 const showEstadosInfo = ref(false);
 const showCampañaInfo = ref(false);
-/* SOLO FILTRO */
+
 const ordenFecha = ref('');
 const filtroCampaña = ref('');
 const filtroEstado = ref('');
@@ -18,7 +18,6 @@ onMounted(async () => {
     error.value = store.error;
 });
 
-/* SOLO FILTRAR POR ESTADO */
 const territoriosFiltrados = computed(() => {
     let lista = [...store.territorios];
 
@@ -79,48 +78,7 @@ const editar = (id) => router.push(`/update-terrirorio/${id}`);
                 <i class="bi bi-plus-circle me-2"></i>Crear Territorio
             </button>
         </div>
-
         
-         <!-- 🔍 Barra superior de filtros -->
-                <div class="row g-3 mb-4">
-
-                <!-- Filtrar por estado -->
-                <div class="col-md-3">
-                    <label class="form-label"><strong>Estado</strong></label>
-                    <select v-model="filtroEstado" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="1">En espera</option>
-                    <option value="2">Pendiente</option>
-                    <option value="3">Pendiente incompleto</option>
-                    <option value="4">Incompleto</option>
-                    <option value="5">Completo</option>
-                    </select>
-                </div>
-
-                <!-- Ordenar por fecha -->
-                <div class="col-md-3">
-                    <label class="form-label"><strong>Ordenar</strong></label>
-                    <select v-model="ordenFecha" class="form-select">
-                    <option value="">Sin ordenar</option>
-                    <option value="asc">Más antigua</option>
-                    <option value="desc">Más reciente</option>
-                    </select>
-                </div>
-
-                <!-- Filtrar por campaña -->
-                <div class="col-md-3">
-                    <label class="form-label"><strong>Campaña</strong></label>
-                    <select v-model="filtroCampaña" class="form-select">
-                    <option value="">Todas</option>
-                    <option
-                        v-for="(label, value) in store.temas"
-                        :key="value"
-                        :value="value"
-                    >
-                        {{ label }}
-                    </option>
-                    </select>
-                </div>
         <div>
             <button class="btn btn-info mb-3 me-3" @click="showEstadosInfo = !showEstadosInfo">
                 <strong>  
@@ -189,7 +147,48 @@ const editar = (id) => router.push(`/update-terrirorio/${id}`);
                 </p>
             </div>
         </div>
-        </div>
+
+            <div class="row g-3 mb-4">
+                <!-- Filtrar por estado -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Estado</strong></label>
+                    <select v-model="filtroEstado" class="form-select">
+                    <option value="">Todos</option>
+                    <option
+                        v-for="(label, value) in store.estados"
+                        :key="value"
+                        :value="value"
+                    >
+                        {{ label }}
+                    </option>
+                    </select>
+                </div>
+
+                <!-- Ordenar por fecha -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Ordenar</strong></label>
+                    <select v-model="ordenFecha" class="form-select">
+                    <option value="">Sin ordenar</option>
+                    <option value="asc">Más antigua</option>
+                    <option value="desc">Más reciente</option>
+                    </select>
+                </div>
+
+                <!-- Filtrar por campaña -->
+                <div class="col-md-3">
+                    <label class="form-label"><strong>Campaña</strong></label>
+                    <select v-model="filtroCampaña" class="form-select">
+                    <option value="">Todas</option>
+                    <option
+                        v-for="(label, value) in store.temas"
+                        :key="value"
+                        :value="value"
+                    >
+                        {{ label }}
+                    </option>
+                    </select>
+                </div>
+            </div>
         <div class="row g-4">
             <div v-if="store.territorioloading && !error" class="alert alert-info mt-4">
                 <i class="bi bi-info-circle me-2"></i>Cargando territorios...
