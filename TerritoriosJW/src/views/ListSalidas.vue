@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useSalidaStore } from "../store/storeSalidas";
 import { useUsuarioStore } from "../store/storeUsuarios";
 import { useTerritorioStore } from "../store/storeTerritorio";
@@ -18,6 +18,81 @@ const usuarioInicializados = ref(false);
 const form = ref({
   fechaInicio: "",
 });
+const paginaActual = ref(1);
+
+const obtenerSemanaInicio = (salida) => {
+  return store.getSalidaSemanalPorId(salida.salidaSemanalId)?.semanaInicio || "Sin fecha";
+};
+
+const timestampSemana = (semanaInicio) => {
+  const timestamp = new Date(semanaInicio).getTime();
+  return Number.isNaN(timestamp) ? -Infinity : timestamp;
+};
+
+const gruposSalidasPorSemana = computed(() => {
+  const grupos = store.salidas.reduce((acc, salida) => {
+    const semanaInicio = obtenerSemanaInicio(salida);
+    if (!acc[semanaInicio]) {
+      acc[semanaInicio] = [];
+    }
+    acc[semanaInicio].push(salida);
+    return acc;
+  }, {});
+
+  return Object.entries(grupos)
+    .sort(([semanaA], [semanaB]) => timestampSemana(semanaB) - timestampSemana(semanaA))
+    .map(([, salidas]) => salidas);
+});
+
+const totalPaginas = computed(() => gruposSalidasPorSemana.value.length);
+
+const salidasPaginaActual = computed(() => {
+  return gruposSalidasPorSemana.value[paginaActual.value - 1] || [];
+});
+
+const cambiarPagina = (pagina) => {
+  if (pagina < 1 || pagina > totalPaginas.value) return;
+  paginaActual.value = pagina;
+};
+
+const paginasVisibles = computed(() => {
+  const total = totalPaginas.value;
+  const actual = paginaActual.value;
+
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const paginas = [1];
+  const inicio = Math.max(2, actual - 1);
+  const fin = Math.min(total - 1, actual + 1);
+
+  if (inicio > 2) {
+    paginas.push("...");
+  }
+
+  for (let pagina = inicio; pagina <= fin; pagina += 1) {
+    paginas.push(pagina);
+  }
+
+  if (fin < total - 1) {
+    paginas.push("...");
+  }
+
+  paginas.push(total);
+  return paginas;
+});
+
+watch(totalPaginas, (nuevoTotal) => {
+  if (nuevoTotal === 0) {
+    paginaActual.value = 1;
+    return;
+  }
+  if (paginaActual.value > nuevoTotal) {
+    paginaActual.value = nuevoTotal;
+  }
+});
+
 const openModal = () => {
   showModal.value = true;
 };
@@ -72,8 +147,10 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
   <div class="container col-12 py-4">
     <div class="container-fluid container-md py-3 py-md-4">
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+    <h1 class="mb-0 d-flex align-items-center">
+                <i class="bi bi-map"></i>Salidas
+            </h1>
     
-    <h1 class="mb-0 fs-2 fs-md-1">Salidas</h1>
     
     <div class="d-grid d-md-flex gap-2 w-100 w-md-auto justify-content-md-end">
       <button class="btn btn-primary" @click="crear()">
@@ -105,18 +182,18 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
         {{ error }}
       </div>
     <!-- <div class="row"> -->
-      <div v-else class="col-12 mb-3" v-for="salida in store.salidas" :key="salida.id">
+      <div v-else class="col-12 mb-3" v-for="salida in salidasPaginaActual" :key="salida.id">
         <div class="card border-primary border-2 shadow-sm">
           <div
             class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
           >
             <span>Salida #{{ salida.id }}</span>
             <span class="text-wite"
-              ><strong>Semana de Inicio:</strong>
+              ><strong>Semana de Salida:
               {{
                 store.getSalidaSemanalPorId(salida.salidaSemanalId)
                   ?.semanaInicio || "N/A"
-              }}
+              }}</strong>
             </span>
           </div>
           <div class="card-body">
@@ -224,6 +301,48 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
         </div>
       </div>
     <!-- </div> -->
+
+      <nav
+        v-if="!store.salidaloading && !error && totalPaginas > 1"
+        aria-label="Paginacion de salidas por semana"
+        class="mt-4"
+      >
+        <ul class="pagination justify-content-center mb-0">
+          <li class="page-item" :class="{ disabled: paginaActual === 1 }">
+            <button
+              class="page-link"
+              type="button"
+              aria-label="Anterior"
+              @click="cambiarPagina(paginaActual - 1)"
+            >
+              &laquo;
+            </button>
+          </li>
+
+          <li
+            v-for="(item, index) in paginasVisibles"
+            :key="`${item}-${index}`"
+            class="page-item"
+            :class="{ active: paginaActual === item, disabled: item === '...' }"
+          >
+            <span v-if="item === '...'" class="page-link">...</span>
+            <button v-else class="page-link" type="button" @click="cambiarPagina(item)">
+              {{ item }}
+            </button>
+          </li>
+
+          <li class="page-item" :class="{ disabled: paginaActual === totalPaginas }">
+            <button
+              class="page-link"
+              type="button"
+              aria-label="Siguiente"
+              @click="cambiarPagina(paginaActual + 1)"
+            >
+              &raquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
     
   </div>
 
