@@ -2,6 +2,11 @@
 import { onMounted, ref } from 'vue';
 import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
+
 const store = useTerritorioStore();
 const router = useRouter();
 const territorio = ref(null);
@@ -19,6 +24,7 @@ onMounted(async () => {
   await store.fetchTerritorios();
   const territorioId = router.currentRoute.value.params.id;
   territorio.value = store.getTerritorioPorId(Number(territorioId));
+
   if (territorio.value) {
     form.value.geoJson = territorio.value.geoJson || '';
     form.value.estado = territorio.value.estado;
@@ -29,7 +35,224 @@ onMounted(async () => {
     form.value.tema = territorio.value.tema;
   } else {
     error.value = 'Territorio no encontrado';
+        return;
   }
+
+    const imagen = await store.getTerritorioImagen(territorioId);
+    if (!imagen) {
+        return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+        const bounds = [[0, 0], [img.height, img.width]];
+
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -2,
+        });
+
+        L.imageOverlay(imagen, bounds).addTo(map);
+        map.fitBounds(bounds);
+
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        const syncGeoJsonFromLayers = () => {
+            const data = drawnItems.toGeoJSON();
+            if (!data.features || data.features.length === 0) {
+                form.value.geoJson = '';
+                return;
+            }
+
+            if (data.features.length === 1) {
+                form.value.geoJson = JSON.stringify(data.features[0].geometry);
+                return;
+            }
+
+            form.value.geoJson = JSON.stringify(data);
+        };
+
+        if (form.value.geoJson) {
+            try {
+                const parsedGeoJson = JSON.parse(form.value.geoJson);
+                const existingLayer = L.geoJSON(parsedGeoJson, {
+                    style: {
+                        color: '#000000',
+                        weight: 2,
+                        fillColor: '#000000',
+                        fillOpacity: 0.5,
+                    },
+                });
+
+                existingLayer.eachLayer((layer) => {
+                    drawnItems.addLayer(layer);
+                });
+            } catch (e) {
+                console.error('Error parseando GeoJSON en edición:', e);
+            }
+        }
+
+        const drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: {
+                polygon: {
+                    shapeOptions: {
+                        color: '#000000',
+                        weight: 2,
+                        fillColor: '#000000',
+                        fillOpacity: 1,
+                    },
+                },
+                rectangle: {
+                    shapeOptions: {
+                        color: '#000000',
+                        weight: 2,
+                        fillColor: '#000000',
+                        fillOpacity: 0.5,
+                    },
+                },
+                polyline: {
+                    shapeOptions: {
+                        color: '#000000',
+                        weight: 10,
+                        opacity: false,
+                    },
+                },
+                marker: false,
+                circle: false,
+                circlemarker: false,
+            },
+        });
+
+        L.drawLocal = {
+            draw: {
+                toolbar: {
+                    actions: {
+                        title: 'Cancelar dibujo',
+                        text: 'Cancelar',
+                    },
+                    finish: {
+                        title: 'Finalizar dibujo',
+                        text: 'Finalizar',
+                    },
+                    undo: {
+                        title: 'Eliminar el ultimo punto dibujado',
+                        text: 'Deshacer',
+                    },
+                    buttons: {
+                        polyline: 'Dibujar una linea (polilinea)',
+                        polygon: 'Dibujar un poligono',
+                        rectangle: 'Dibujar un rectangulo',
+                        circle: 'Dibujar un circulo',
+                        marker: 'Colocar un marcador',
+                        circlemarker: 'Colocar un marcador circular',
+                    },
+                },
+                handlers: {
+                    circle: {
+                        tooltip: {
+                            start: 'Haga clic y arrastre para dibujar un circulo.',
+                        },
+                        radius: 'Radio',
+                    },
+                    circlemarker: {
+                        tooltip: {
+                            start: 'Haga clic en el mapa para colocar un marcador circular.',
+                        },
+                    },
+                    marker: {
+                        tooltip: {
+                            start: 'Haga clic en el mapa para colocar un marcador.',
+                        },
+                    },
+                    polygon: {
+                        tooltip: {
+                            start: 'Haga clic para comenzar a dibujar el area.',
+                            cont: 'Haga clic para continuar dibujando el area.',
+                            end: 'Haga clic en el primer punto para cerrar el area.',
+                        },
+                    },
+                    polyline: {
+                        error: '<strong>Error:</strong> los bordes no pueden cruzarse.',
+                        tooltip: {
+                            start: 'Haga clic para comenzar a dibujar la linea.',
+                            cont: 'Haga clic para continuar dibujando la linea.',
+                            end: 'Haga clic en el ultimo punto para finalizar la linea.',
+                        },
+                    },
+                    rectangle: {
+                        tooltip: {
+                            start: 'Haga clic y arrastre para dibujar un rectangulo.',
+                        },
+                    },
+                    simpleshape: {
+                        tooltip: {
+                            end: 'Suelte el raton para finalizar el dibujo.',
+                        },
+                    },
+                },
+            },
+            edit: {
+                toolbar: {
+                    actions: {
+                        save: {
+                            title: 'Guardar cambios',
+                            text: 'Guardar',
+                        },
+                        cancel: {
+                            title: 'Cancelar edicion, descarta todos los cambios',
+                            text: 'Cancelar',
+                        },
+                        clearAll: {
+                            title: 'Limpiar todas las capas',
+                            text: 'Limpiar todo',
+                        },
+                    },
+                    buttons: {
+                        edit: 'Editar elementos',
+                        editDisabled: 'No hay elementos para editar',
+                        remove: 'Eliminar elementos',
+                        removeDisabled: 'No hay elementos para eliminar',
+                    },
+                },
+                handlers: {
+                    edit: {
+                        tooltip: {
+                            text: 'Arrastre los nodos o marcadores para editar los elementos.',
+                            subtext: 'Haga clic en cancelar para deshacer los cambios.',
+                        },
+                    },
+                    remove: {
+                        tooltip: {
+                            text: 'Haga clic en un elemento para eliminarlo.',
+                        },
+                    },
+                },
+            },
+        };
+
+        map.addControl(drawControl);    
+
+        map.on(L.Draw.Event.CREATED, (event) => {
+            drawnItems.addLayer(event.layer);
+            syncGeoJsonFromLayers();
+        });
+
+        map.on(L.Draw.Event.EDITED, () => {
+            syncGeoJsonFromLayers();
+        });
+
+        map.on(L.Draw.Event.DELETED, () => {
+            syncGeoJsonFromLayers();
+        });
+    };
+
+    img.onerror = () => {
+        console.error('Leaflet no pudo cargar la imagen');
+    };
+
+    img.src = imagen;
 });
 const actualizarTerritorio = async () => {
   await store.updateTerritorio(territorio.value.id, {
@@ -94,8 +317,12 @@ const actualizarTerritorio = async () => {
                 </div>
                 <div class="col-12">
                     <label for="geoJson" class="form-label"><strong>GeoJSON</strong> <i class="bi bi-geo-alt ms-1"></i></label>
-                    <textarea id="geoJson" v-model="form.geoJson" class="form-control" rows="2" placeholder="Pegue aquí el GeoJSON del territorio"></textarea>
-                    <div class="form-text">Puedes pegar aquí la geometría en formato GeoJSON.</div>
+                    <textarea id="geoJson" v-model="form.geoJson" class="form-control" rows="2" placeholder="Dibuja o edita en el mapa para generar el GeoJSON" readonly></textarea>
+                    <div class="form-text">Dibuja, edita o elimina areas en el mapa para actualizar el GeoJSON.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label"><strong>Mapa del territorio</strong></label>
+                    <div id="map" class="map-container"></div>
                 </div>
             </div>
             <div class="mt-4 d-flex justify-content-end">
@@ -109,3 +336,12 @@ const actualizarTerritorio = async () => {
         </form>
     </div>
 </template>
+<style scoped>
+.map-container {
+    width: 100%;
+    height: 520px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    overflow: hidden;
+}
+</style>
