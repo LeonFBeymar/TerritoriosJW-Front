@@ -17,6 +17,7 @@ const form = ref({
   salidaSemanalId: '',
   puntoEncuentro: '',
   tema: 1, // Valor por defecto para campaña
+  turno: 0,
   fechaSalida: '',
   horaSalidaHour: '',
   horaSalidaMinute: '',
@@ -45,6 +46,14 @@ watch([() => form.value.conductor1, () => form.value.conductor2, agregarSegundoC
   if (add2 && c1 && c2 && c1 === c2) {
     form.value.conductor2 = '';
   }
+});
+
+watch(() => form.value.horaSalidaHour, (hour) => {
+  if (hour === '') {
+    return;
+  }
+
+  form.value.turno = Number(hour) >= 12 ? 1 : 0;
 });
 
 onMounted(async () => {
@@ -94,12 +103,13 @@ const crearSalida = async () => {
     salidaSemanalId: form.value.salidaSemanalId,
     puntoEncuentro: form.value.puntoEncuentro,
     horaSalida: horaSalidaIso,
+    turno: Number(form.value.turno),
     observaciones: form.value.observaciones,
     tema: form.value.tema, // Enviar campaña seleccionada
   });
 
 
-  form.value = { conductor1: '', conductor2: '', territorioId: '', salidaSemanalId: '', puntoEncuentro: '', fechaSalida: '', horaSalidaHour: '', horaSalidaMinute: '', observaciones: '', tema: 1 };
+  form.value = { conductor1: '', conductor2: '', territorioId: '', salidaSemanalId: '', puntoEncuentro: '', fechaSalida: '', horaSalidaHour: '', horaSalidaMinute: '', observaciones: '', tema: 1, turno: 0 };
   agregarSegundoConductor.value = false;
   router.push('/salidas');
 };
@@ -187,7 +197,14 @@ const volver = () => {
           </option>
         </select>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-3">
+        <label class="form-label"> <strong>Turno *</strong></label>
+        <select v-model.number="form.turno" class="form-select" required>
+          <option :value="0">Mañana</option>
+          <option :value="1">Tarde</option>
+        </select>
+      </div>
+      <div class="col-md-3">
         <label class="form-label"> <strong>Campaña*</strong></label>
         <select v-model="form.tema" class="form-select" required>
           <option value="" disabled>Seleccione una campaña</option>
