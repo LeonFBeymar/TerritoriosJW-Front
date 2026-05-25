@@ -10,10 +10,16 @@ const form = ref({
   area: null,
   estado: 1,
   prioridad: 1,
+  turno: 0,
   ultimaSalida: '',
   atributo1: '',
   tema: '',
 });
+
+const turnos = [
+  { value: 0, label: 'Mañana' },
+  { value: 1, label: 'Tarde' },
+];
 
 const estados = [
   { value: 1, label: 'En espera' },
@@ -47,12 +53,13 @@ const crearTerritorio = async () => {
     Area: form.value.area ? Number(form.value.area) : null,
     Estado: Number(form.value.estado),
     Prioridad: Number(form.value.prioridad),
+    Turno: Number(form.value.turno),
     UltimaSalida: form.value.ultimaSalida || null,
     Atributo1: form.value.atributo1 || null,
     Tema: form.value.tema || null,
   });
   // Limpiar formulario o redirigir según necesidad
-  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, ultimaSalida: '', atributo1: '', tema: '' };
+  form.value = { nombre: '', geoJson: '', area: null, estado: 1, prioridad: 1, turno: 0, ultimaSalida: '', atributo1: '', tema: '' };
   volver();
 };
 
@@ -89,6 +96,12 @@ const volver = () => {
         <label class="form-label"><strong>Campaña *</strong></label>
         <select v-model="form.tema" class="form-select" required>
           <option v-for="(label, value) in temas" :key="value" :value="value">{{ label }}</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label"><strong>Turno *</strong></label>
+        <select v-model.number="form.turno" class="form-select" required>
+          <option v-for="turno in turnos" :key="turno.value" :value="turno.value">{{ turno.label }}</option>
         </select>
       </div>
       <div class="col-md-6">

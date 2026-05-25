@@ -15,6 +15,7 @@ const form = ref({
     geoJson: '',
     estado: 1,
     prioridad: 1,
+    turno: 0,
     ultimaSalida: '',
     area: null,
     atributo1: '',
@@ -29,6 +30,7 @@ onMounted(async () => {
     form.value.geoJson = territorio.value.geoJson || '';
     form.value.estado = territorio.value.estado;
     form.value.prioridad = territorio.value.prioridad;
+    form.value.turno = territorio.value.turno ?? 0;
     form.value.ultimaSalida = territorio.value.ultimaSalida || '';
     form.value.area = territorio.value.area || null;
     form.value.atributo1 = territorio.value.atributo1 || '';
@@ -260,6 +262,7 @@ const actualizarTerritorio = async () => {
     area: form.value.area ? Number(form.value.area) : null,
     estado: form.value.estado,
     prioridad: form.value.prioridad,
+        turno: Number(form.value.turno),
     ultimaSalida: form.value.ultimaSalida,
     tema: form.value.tema,
     atributo1: form.value.atributo1,
@@ -304,6 +307,14 @@ const actualizarTerritorio = async () => {
                         <option v-for="(label, value) in store.temas" :key="value" :value="value">{{ label }}</option>
                     </select>
                     <div class="form-text">Seleccione la campaña para el territorio.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="turno" class="form-label"><strong>Turno*</strong></label>
+                    <select id="turno" v-model.number="form.turno" class="form-select" required>
+                        <option :value="0">Mañana</option>
+                        <option :value="1">Tarde</option>
+                    </select>
+                    <div class="form-text">Define el turno del territorio.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="atributo1" class="form-label"><strong>Notas adicionales</strong> <i class="bi bi-info-circle ms-1"></i></label>

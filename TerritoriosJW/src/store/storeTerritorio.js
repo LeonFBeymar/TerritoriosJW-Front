@@ -108,7 +108,7 @@ export const useTerritorioStore = defineStore('territorio', {
                 this.error = ` No se pudo eliminar el territorio con id ${id}.`;
             }
         },
-        getNombreEstado(idEstado) {
+         getNombreEstado(idEstado) {
             const estados = {
                 1: 'En espera',
                 2: 'Pendiente',
@@ -117,6 +117,13 @@ export const useTerritorioStore = defineStore('territorio', {
                 5: 'Completo',
             };
             return estados[idEstado] || 'Desconocido';
+        },
+        getNombreTurno(idTurno) {
+            const turnos = {
+                0: 'Mañana',
+                1: 'Tarde'
+            };
+            return turnos[idTurno] || 'Desconocido';
         },
         getNombrePrioridad(idPrioridad) {
             const prioridades = {

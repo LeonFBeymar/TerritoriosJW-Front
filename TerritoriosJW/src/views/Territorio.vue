@@ -164,7 +164,7 @@ const descargarImagen = async () => {
 
         <div class="mb-2">
           <p>
-            <strong>Última Salida:</strong>
+            <strong>Última Salida Realizada:</strong>
             <span class="ms-2">{{
               territorio?.ultimaSalida
                 ? territorio.ultimaSalida
@@ -175,7 +175,7 @@ const descargarImagen = async () => {
 
         <div class="mb-3">
           <p>
-            <strong>Campaña:</strong>
+            <strong>Ultima Campaña Realizada:</strong>
             <span class="ms-2 italic">{{
               store.getNombreTema(territorio?.tema) || "Sin Campaña"
             }}</span>
@@ -186,6 +186,14 @@ const descargarImagen = async () => {
             <strong>Notas Adicionales:</strong>
             <span class="ms-2 text-secondary italic">{{
               territorio?.atributo1 || "Sin Notas"
+            }}</span>
+          </p>
+        </div>
+        <div class="mb-3">
+          <p>
+            <strong>Ultimo Turno Realizado:</strong>
+            <span class="ms-2 text-secondary italic">{{
+              store.getNombreTurno(territorio?.turno)
             }}</span>
           </p>
         </div>

@@ -290,6 +290,7 @@ const crearReporte = async () => {
   isCreatingReporte.value = true;
   try {
     form.value.salidaId = router.currentRoute.value.params.id;
+    const turnoSalida = Number(store.salida?.turno);
 
     await reporteStore.createReporte({
       salidaId: form.value.salidaId,
@@ -305,6 +306,7 @@ const crearReporte = async () => {
       estado: Number(form.value.estadoTerritorio),
       geoJson: form.value.geoJsonFaltante || null,
       tema: store.salida.tema || 1, // Mantener la campaña del territorio según la salida
+      ...(Number.isNaN(turnoSalida) ? {} : { turno: turnoSalida }),
     });
 
 

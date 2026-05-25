@@ -19,6 +19,7 @@ const form = ref({
   fechaSalida: '',
   horaSalidaHour: '',
   horaSalidaMinute: '',
+  turno: 0,
   observaciones: '',
   tema: 1, // Valor por defecto para campaña
 });
@@ -49,6 +50,14 @@ watch([() => form.value.conductor1, () => form.value.conductor2], ([conductor1, 
   if (agregarSegundoConductor.value && conductor1 && conductor2 && conductor1 === conductor2) {
     form.value.conductor2 = '';
   }
+});
+
+watch(() => form.value.horaSalidaHour, (hour) => {
+  if (hour === '') {
+    return;
+  }
+
+  form.value.turno = Number(hour) >= 12 ? 1 : 0;
 });
 
 onMounted(async () => {
@@ -84,6 +93,7 @@ onMounted(async () => {
     agregarSegundoConductor.value = Boolean(form.value.conductor2);
     form.value.observaciones = salida.value.observaciones || '';
     form.value.tema = salida.value.tema || 1;
+    form.value.turno = salida.value.turno ?? (Number(form.value.horaSalidaHour) >= 12 ? 1 : 0);
   }
 });
 
@@ -128,6 +138,7 @@ const editar = async () => {
     salidaSemanalId: form.value.salidaSemanalId,
     puntoEncuentro: form.value.puntoEncuentro,
     horaSalida: horaSalidaIso,
+    turno: Number(form.value.turno),
     observaciones: form.value.observaciones, // Usado como grupo/s por ahora
     tema: form.value.tema // Enviar campaña seleccionada
   });
@@ -221,7 +232,14 @@ const volver = () => router.push("/salidas");
           </option>
         </select>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-3">
+        <label class="form-label"> <strong>Turno *</strong></label>
+        <select v-model.number="form.turno" class="form-select" required>
+          <option :value="0">Mañana</option>
+          <option :value="1">Tarde</option>
+        </select>
+      </div>
+      <div class="col-md-3">
         <label class="form-label"> <strong>Campaña*</strong></label>
         <select v-model="form.tema" class="form-select" required>
           <option value="" disabled>Seleccione una campaña</option>
