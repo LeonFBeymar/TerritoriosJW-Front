@@ -21,6 +21,7 @@ export default {
     updateSalida: (id, data) => api.put(`/Salida/${id}`, data),
     deleteSalida: (id) => api.delete(`/Salida/${id}`),
     descargarExcelSalidas: () => api.get('/Salida/excel', { responseType: 'blob' }),
+    descargarExcelReporte: (id) => api.get(`/Salida/excel-report/${id}`, { responseType: 'blob' }),
     //Usuarios
     getUsuarios: () => api.get('/Usuario'),
     getUsuario: (id) => api.get(`/Usuario/${id}`),

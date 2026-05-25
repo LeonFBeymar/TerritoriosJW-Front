@@ -4,7 +4,6 @@ import { useSalidaStore } from "../store/storeSalidas";
 import { useUsuarioStore } from "../store/storeUsuarios";
 import { useTerritorioStore } from "../store/storeTerritorio";
 import { useReporteStore } from "../store/storeReporte";
-import api from "../services/api";
 import { useRouter } from "vue-router";
 const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
@@ -22,6 +21,7 @@ const form = ref({
 const salidaSemanalError = ref("");
 const salidaSemanalSuccess = ref("");
 const paginaActual = ref(1);
+const salidaSemanalSeleccionada = ref("");
 
 const ultimasSalidasSemanales = computed(() => {
   return [...store.salidasSemanales]
@@ -182,6 +182,14 @@ const reportar = (salidaId, territorioId) => {
 };
 const getReporteSalida = (salidaId) => reporteStore.getReporteByIdSalida(salidaId);
 const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
+
+const descargarReporteExcel = async () => {
+  if (!salidaSemanalSeleccionada.value) {
+    return;
+  }
+
+  await store.descargarExcelReportePorSalidaSemanal(Number(salidaSemanalSeleccionada.value));
+};
 </script>
 <template>
   <div class="container col-12 py-4">
@@ -192,7 +200,7 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
             </h1>
     
     
-    <div class="d-grid d-md-flex gap-2 w-100 w-md-auto justify-content-md-end">
+    <div class="d-grid d-md-flex gap-2 w-100 w-md-auto justify-content-md-end acciones-salidas">
       <button class="btn btn-primary" @click="crear()">
         Crear Salida
       </button>
@@ -207,6 +215,30 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
         @click="store.descargarExcelSalidas()">
         <span v-if="store.cargandoExcel" class="spinner-border spinner-border-sm me-1"></span>
         {{ store.cargandoExcel ? 'Generando...' : 'Descargar Excel' }}
+      </button>
+
+      <select
+        v-model="salidaSemanalSeleccionada"
+        class="form-select form-select-sm reporte-semanal-select"
+        aria-label="Seleccionar salida semanal"
+      >
+        <option value="" disabled>Fecha salida semanal</option>
+        <option
+          v-for="semana in ultimasSalidasSemanales"
+          :key="semana.id"
+          :value="semana.id"
+        >
+          {{ semana.semanaInicio }}
+        </option>
+      </select>
+
+      <button
+        class="btn btn-success"
+        :disabled="!salidaSemanalSeleccionada || store.cargandoExcelReporte"
+        @click="descargarReporteExcel"
+      >
+        <span v-if="store.cargandoExcelReporte" class="spinner-border spinner-border-sm me-1"></span>
+        {{ store.cargandoExcelReporte ? 'Generando...' : 'Descargar Reporte Excel' }}
       </button>
     </div>
 
@@ -461,5 +493,19 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
 }
 .style-color {
   background-color: #4d087a !important;
+}
+
+.acciones-salidas > * {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .acciones-salidas > * {
+    width: auto;
+  }
+
+  .reporte-semanal-select {
+    width: 200px;
+  }
 }
 </style>
