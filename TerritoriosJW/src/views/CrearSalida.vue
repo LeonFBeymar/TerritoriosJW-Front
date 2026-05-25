@@ -24,6 +24,16 @@ const form = ref({
 });
 const agregarSegundoConductor = ref(false);
 
+const ultimasSalidasSemanales = computed(() => {
+  return [...salidaStore.salidasSemanales]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 4);
+});
+
+const horasDisponibles = computed(() => {
+  return Array.from({ length: 11 }, (_, i) => i + 8);
+});
+
 // Watchers para mantener consistencia y limpiar duplicados o valores inválidos
 watch([() => form.value.conductor1, () => form.value.conductor2, agregarSegundoConductor], ([c1, c2, add2], [oldC1, oldC2, oldAdd2]) => {
   // Si el checkbox se desmarca, limpiar conductor2
@@ -146,7 +156,7 @@ const volver = () => {
         <label class="form-label"> <strong>Semana de Salida *</strong></label>
         <select v-model="form.salidaSemanalId" class="form-select" required>
           <option value="" disabled>Seleccione una semana</option>
-          <option v-for="semana in salidaStore.salidasSemanales" :key="semana.id" :value="semana.id">
+          <option v-for="semana in ultimasSalidasSemanales" :key="semana.id" :value="semana.id">
             {{ semana.semanaInicio }}
           </option>
         </select>
@@ -163,8 +173,8 @@ const volver = () => {
         <label class="form-label"> <strong>Hora (hs)  *</strong></label>
         <select v-model="form.horaSalidaHour" class="form-select" required>
           <option value="" disabled>HH</option>
-          <option v-for="h in 24" :key="h-1" :value="(h-1)">
-            {{ (h-1) }}hs
+          <option v-for="h in horasDisponibles" :key="h" :value="h">
+            {{ h }}hs
           </option>
         </select>
       </div>
