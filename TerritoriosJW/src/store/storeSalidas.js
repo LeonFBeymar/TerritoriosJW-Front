@@ -12,6 +12,7 @@ export const useSalidaStore = defineStore('salida', {
         salidaloading: false,
         salidaloadingSave: false,
         salidasSemanalesLoadingSave: false,
+        salidasSemanalesLoadingDeleteId: null,
     }),
     actions: {
         async fetchSalidas() {
@@ -114,6 +115,19 @@ export const useSalidaStore = defineStore('salida', {
                 console.error('Error creating salida semanal:', error);
                 this.salidasSemanalesLoadingSave = false;
                 this.error = ' No se pudo crear la salida semanal.';
+            }
+        },
+        async deleteSalidaSemanal(id) {
+            this.salidasSemanalesLoadingDeleteId = id;
+            try {
+                await api.deleteSalidaSemanal(id);
+                this.salidasSemanales = this.salidasSemanales.filter(s => s.id !== id);
+                this.error = null;
+            } catch (error) {
+                console.error(`Error deleting salida semanal with id ${id}:`, error);
+                this.error = error?.response?.data?.message || ` No se pudo eliminar la salida semanal con id ${id}.`;
+            } finally {
+                this.salidasSemanalesLoadingDeleteId = null;
             }
         },
         getSalidaSemanalPorId(id) {

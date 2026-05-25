@@ -4,6 +4,7 @@ import { useSalidaStore } from "../store/storeSalidas";
 import { useUsuarioStore } from "../store/storeUsuarios";
 import { useTerritorioStore } from "../store/storeTerritorio";
 import { useReporteStore } from "../store/storeReporte";
+import api from "../services/api";
 import { useRouter } from "vue-router";
 const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
@@ -18,7 +19,15 @@ const usuarioInicializados = ref(false);
 const form = ref({
   fechaInicio: "",
 });
+const salidaSemanalError = ref("");
+const salidaSemanalSuccess = ref("");
 const paginaActual = ref(1);
+
+const ultimasSalidasSemanales = computed(() => {
+  return [...store.salidasSemanales]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 4);
+});
 
 const obtenerSemanaInicio = (salida) => {
   return store.getSalidaSemanalPorId(salida.salidaSemanalId)?.semanaInicio || "Sin fecha";
@@ -94,6 +103,8 @@ watch(totalPaginas, (nuevoTotal) => {
 });
 
 const openModal = () => {
+  salidaSemanalError.value = "";
+  salidaSemanalSuccess.value = "";
   showModal.value = true;
 };
 const closeModal = () => {
@@ -124,10 +135,39 @@ onMounted(async () => {
 });
 
 const crearSalidaSemanal = async () => {
+  if (!form.value.fechaInicio) {
+    salidaSemanalError.value = "Debe seleccionar una fecha de inicio.";
+    salidaSemanalSuccess.value = "";
+    return;
+  }
+
   await store.createSalidaSemanal({
     semanaInicio: form.value.fechaInicio,
   });
-  closeModal();
+
+  if (store.error) {
+    salidaSemanalError.value = store.error;
+    salidaSemanalSuccess.value = "";
+    return;
+  }
+
+  salidaSemanalError.value = "";
+  salidaSemanalSuccess.value = "Salida semanal creada correctamente.";
+  form.value.fechaInicio = "";
+};
+
+const eliminarSalidaSemanal = async (id) => {
+  salidaSemanalError.value = "";
+  salidaSemanalSuccess.value = "";
+  
+  await store.deleteSalidaSemanal(id);
+
+  if (store.error) {
+    salidaSemanalError.value = store.error;
+    return;
+  }
+
+  salidaSemanalSuccess.value = "Salida semanal eliminada correctamente.";
 };
 const crear = () => {
   router.push("/crear-salida");
@@ -157,8 +197,8 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
         Crear Salida
       </button>
       
-      <button class="btn btn-primary" @click="openModal">
-        Crear Salida Semanal
+      <button class="btn style-color text-white " @click="openModal">
+        Salida Semanal
       </button>
       
       <button 
@@ -355,24 +395,57 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
   >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Crear Salida Semanal</h5>
-          <button type="button" class="btn-close" @click="closeModal"></button>
+        <div class="modal-header style-color text-white">
+          <h5 class="modal-title text-white">Salida Semanal</h5>
+          <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
         </div>
         <div class="modal-body">
-          <div class="col-md-6">
-            <label class="form-label">Indique la semana de inicio</label>
-            <input
-              v-model="form.fechaInicio"
-              type="date"
-              class="form-control"
-            />
+          <div class="mb-3">
+            <label class="form-label">Fecha de inicio semanal</label>
+            <div class="d-flex gap-2 align-items-end">
+              <input v-model="form.fechaInicio" type="date" class="form-control" />
+              <button
+                class="btn btn-primary"
+                type="button"
+                :disabled="store.salidasSemanalesLoadingSave"
+                @click="crearSalidaSemanal()"
+              >
+                {{ store.salidasSemanalesLoadingSave ? "Creando..." : "Crear" }}
+              </button>
+            </div>
           </div>
+
+          <div v-if="salidaSemanalError" class="alert alert-danger py-2 mb-3">
+            {{ salidaSemanalError }}
+          </div>
+          <div v-if="salidaSemanalSuccess" class="alert alert-success py-2 mb-3">
+            {{ salidaSemanalSuccess }}
+          </div>
+
+          <h6 class="mb-2">Ultimas salidas semanales</h6>
+          <div v-if="ultimasSalidasSemanales.length === 0" class="text-muted small">
+            Aun no hay salidas semanales creadas.
+          </div>
+          <ul v-else class="list-group">
+            <li
+              v-for="semana in ultimasSalidasSemanales"
+              :key="semana.id"
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <span>#{{ semana.id }} - {{ semana.semanaInicio }}</span>
+              <button
+                class="btn btn-sm btn-outline-danger"
+                type="button"
+                :disabled="store.salidasSemanalesLoadingDeleteId === semana.id"
+                @click="eliminarSalidaSemanal(semana.id)"
+              >
+                {{ store.salidasSemanalesLoadingDeleteId === semana.id ? "Eliminando..." : "Eliminar" }}
+              </button>
+            </li>
+          </ul>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary mt-3" @click="crearSalidaSemanal()">
-            Crear Salida Semanal
-          </button>
+          <button class="btn btn-outline-secondary" type="button" @click="closeModal">Cerrar</button>
         </div>
       </div>
     </div>
@@ -385,5 +458,8 @@ const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
 }
 .card-header.bg-primary {
   background-color: #6f42c1 !important;
+}
+.style-color {
+  background-color: #4d087a !important;
 }
 </style>
