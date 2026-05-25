@@ -8,6 +8,7 @@ export const useSalidaStore = defineStore('salida', {
         salida: null,
         salidasSemanales: [],
         cargandoExcel: false,
+        cargandoExcelReporte: false,
         error: null,
         salidaloading: false,
         salidaloadingSave: false,
@@ -160,6 +161,30 @@ export const useSalidaStore = defineStore('salida', {
                 this.error = ' No se pudo descargar el archivo.';
             } finally {
                 this.cargandoExcel = false;
+            }
+        },
+        async descargarExcelReportePorSalidaSemanal(salidaSemanalId) {
+            try {
+                this.cargandoExcelReporte = true;
+                const response = await api.descargarExcelReporte(salidaSemanalId);
+
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `salidas-reporte-${salidaSemanalId}.xlsx`);
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                this.error = null;
+            } catch (error) {
+                console.error('Error al descargar reporte excel:', error);
+                alert('No se pudo descargar el reporte excel');
+                this.error = ' No se pudo descargar el reporte excel.';
+            } finally {
+                this.cargandoExcelReporte = false;
             }
         }
     }
