@@ -17,6 +17,7 @@ const salidaR = ref(null);
 const territorioId = router.currentRoute.value.params.territorioId;
 const reportado = ref(false);
 const reporte = ref(null);
+const isCreatingReporte = ref(false);
 const form = ref({
   salidaId: "",
   estadoTerritorio: "",
@@ -71,6 +72,24 @@ onMounted(async () => {
 
     const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
+
+    const syncGeoJsonFromLayers = () => {
+      const data = drawnItems.toGeoJSON();
+      if (!data.features || data.features.length === 0) {
+        drawnGeoJson.value = "";
+        form.value.geoJsonFaltante = "";
+        return;
+      }
+
+      if (data.features.length === 1) {
+        drawnGeoJson.value = JSON.stringify(data.features[0].geometry);
+        form.value.geoJsonFaltante = drawnGeoJson.value;
+        return;
+      }
+
+      drawnGeoJson.value = JSON.stringify(data);
+      form.value.geoJsonFaltante = drawnGeoJson.value;
+    };
 
     // --- LÓGICA PARA CARGAR EL GEOJSON EXISTENTE ---
     if (reporte.value && reporte.value.geoJsonFaltante) {
@@ -243,13 +262,16 @@ onMounted(async () => {
     map.on(L.Draw.Event.CREATED, function (event) {
       const layer = event.layer;
       drawnItems.addLayer(layer);
-
-      const geojson = layer.toGeoJSON();
-
-      drawnGeoJson.value = JSON.stringify(geojson.geometry);
-      form.value.geoJsonFaltante = drawnGeoJson.value;
-
+      syncGeoJsonFromLayers();
       console.log("GeoJSON:", drawnGeoJson.value);
+    });
+
+    map.on(L.Draw.Event.EDITED, function () {
+      syncGeoJsonFromLayers();
+    });
+
+    map.on(L.Draw.Event.DELETED, function () {
+      syncGeoJsonFromLayers();
     });
   };
 
@@ -265,33 +287,38 @@ const volver = () => {
 };
 
 const crearReporte = async () => {
-  form.value.salidaId = router.currentRoute.value.params.id;
+  isCreatingReporte.value = true;
+  try {
+    form.value.salidaId = router.currentRoute.value.params.id;
 
-  await reporteStore.createReporte({
-    salidaId: form.value.salidaId,
-    estadoTerritorio: form.value.estadoTerritorio,
-    geoJsonFaltante: form.value.geoJsonFaltante,
-    notas: form.value.notas,
-  });
+    await reporteStore.createReporte({
+      salidaId: form.value.salidaId,
+      estadoTerritorio: form.value.estadoTerritorio,
+      geoJsonFaltante: form.value.geoJsonFaltante,
+      notas: form.value.notas,
+    });
 
-  await store.updateSalida(form.value.salidaId, {
-    activo: false
-  });
-  await territorioStore.updateTerritorio(territorioId, {
-    estado: Number(form.value.estadoTerritorio),
-    geoJson: form.value.geoJsonFaltante || null,
-    tema: store.salida.tema || 1, // Mantener la campaña del territorio según la salida
-  });
+    await store.updateSalida(form.value.salidaId, {
+      activo: false
+    });
+    await territorioStore.updateTerritorio(territorioId, {
+      estado: Number(form.value.estadoTerritorio),
+      geoJson: form.value.geoJsonFaltante || null,
+      tema: store.salida.tema || 1, // Mantener la campaña del territorio según la salida
+    });
 
 
-  form.value = {
-    salidaId: "",
-    estadoTerritorio: "",
-    geoJsonFaltante: "",
-    notas: "",
-  };
+    form.value = {
+      salidaId: "",
+      estadoTerritorio: "",
+      geoJsonFaltante: "",
+      notas: "",
+    };
 
-  volver();
+    volver();
+  } finally {
+    isCreatingReporte.value = false;
+  }
 };
 </script>
 <template>
@@ -344,7 +371,9 @@ const crearReporte = async () => {
         <button type="button" class="btn btn-secondary" @click="volver">
           Volver
         </button>
-        <button type="submit" class="btn btn-success">Crear Reporte</button>
+        <button type="submit" class="btn btn-success" :disabled="isCreatingReporte">
+          {{ isCreatingReporte ? "Creando..." : "Crear Reporte" }}
+        </button>
       </div>
     </form>
   </div>
