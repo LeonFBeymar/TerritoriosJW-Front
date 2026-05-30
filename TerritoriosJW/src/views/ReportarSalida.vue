@@ -340,8 +340,10 @@ const crearReporte = async () => {
 };
 </script>
 <template>
-  <div v-if="!reportado" class="container">
-    <h1 class="mb-4 py-4"> <span>Reportar Salida</span></h1>
+  <div v-if="!reportado" class="container py-4">
+    <h1 class="mb-2">Reportar Salida</h1>
+    <p class="text-muted mb-4">Complete los datos del reporte de esta salida.</p>
+    <div class="form-shell">
     <form @submit.prevent="crearReporte" class="row g-3">
       <div class="col-md-6">
         <label class="form-label">Estado del Territorio</label>
@@ -353,12 +355,12 @@ const crearReporte = async () => {
         </select>
       </div>
       <div class="col-md-6">
-        <label class="form-label">GeoJson Faltante</label>
+        <label class="form-label">(GeoJson) Parte Completada</label>
         <input
           v-model="form.geoJsonFaltante"
           type="text"
           class="form-control"
-          placeholder="Indique qué geoJson falta"
+          placeholder="Indique qué parte del territorio se completó (opcional)"
           readonly
         />
       </div>
@@ -373,19 +375,14 @@ const crearReporte = async () => {
       </div>
       <div class="mt-4">
         <label class="form-label"
-          >Seleccione en el mapa la parte realizada del territorio:</label
+          >(GeoJson) Seleccione en el mapa la parte realizada del territorio:</label
         >
         <div
           id="map"
-          style="
-            height: 400px;
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-          "
+          class="map-container"
         ></div>
       </div>
-      <div class="col-12 d-flex justify-content-end gap-2">
+      <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
         <button type="button" class="btn btn-secondary" @click="volver">
           Volver
         </button>
@@ -394,40 +391,106 @@ const crearReporte = async () => {
         </button>
       </div>
     </form>
+    </div>
   </div>
-  <div v-else class="container">
-    <h1 class="mb-1 py-4"> <span>Reporte de Salida</span></h1>
-    <p>
-      <strong>Estado del Territorio:</strong>
-      {{
-        territorioStore.getNombreEstado(Number(reporte.estadoTerritorio)) ||
-        "N/A"
-      }}
-    </p>
-    <p>
-      <strong>Campaña:</strong>
-      {{ territorioStore.getNombreTema(store.salida.tema) || "Sin Campaña" }}
-    </p>
-    <p>
-      <strong>GeoJson Faltante:</strong>
-      {{ reporte.geoJsonFaltante || "Sin datos" }}
-    </p>
-    <p>
-      <strong>Notas Adicionales:</strong> {{ reporte.notas || "Sin Notas" }}
-    </p>
+  <div v-else class="container py-4">
+    <h1 class="mb-4">Reporte de Salida</h1>
+    <div class="reporte-shell">
+    <div class="row g-3 mb-2">
+      <div class="col-md-6">
+        <div class="dato-item">
+          <strong class="dato-label">Estado del Territorio</strong>
+          <div>
+            {{
+              territorioStore.getNombreEstado(Number(reporte.estadoTerritorio)) ||
+              "N/A"
+            }}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dato-item">
+          <strong class="dato-label">Campaña</strong>
+          <div>{{ territorioStore.getNombreTema(store.salida.tema) || "Sin Campaña" }}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dato-item">
+          <strong class="dato-label">GeoJson Faltante</strong>
+          <div>{{ reporte.geoJsonFaltante || "Sin datos" }}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dato-item">
+          <strong class="dato-label">Notas Adicionales</strong>
+          <div>{{ reporte.notas || "Sin Notas" }}</div>
+        </div>
+      </div>
+    </div>
     <div class="mt-4">
       <label class="form-label"
         >Parte realizada del territorio (según el mapa):</label
       >
       <div
         id="map"
-        style="height: 400px; width: 100%; border-radius: 8px; overflow: hidden"
+        class="map-container"
       ></div>
     </div>
-    <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+    <div class="col-12 d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
       <button type="button" class="btn btn-secondary" @click="volver">
         Volver
       </button>
     </div>
+    </div>
   </div>
 </template>
+<style scoped>
+.form-shell,
+.reporte-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1px solid #eadff7;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
+
+.dato-item {
+  background: #ffffff;
+  border: 1px solid #efe8f7;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  height: 100%;
+}
+
+.dato-label {
+  display: block;
+  color: #5e3a7f;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+}
+
+.map-container {
+  height: 400px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .form-shell,
+  .reporte-shell {
+    padding: 1.25rem;
+  }
+}
+</style>

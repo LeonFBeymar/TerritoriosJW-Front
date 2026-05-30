@@ -164,7 +164,9 @@ const volver = () => {
 
 <template>
   <div class="container py-4">
-    <h1 class="mb-4">Crear Salida</h1>
+    <h1 class="mb-2">Crear Salida</h1>
+    <p class="text-muted mb-4">Complete los datos para registrar una nueva salida.</p>
+    <div class="form-shell">
     <form @submit.prevent="crearSalida" class="row g-3">
       <div class="col-md-6">
         <label class="form-label"> <strong>Conductor principal *</strong></label>
@@ -222,7 +224,7 @@ const volver = () => {
         <input v-model="form.fechaSalida" type="date" class="form-control" required />
       </div>
       <div class="col-md-3">
-        <label class="form-label"> <strong>Hora (hs)  *</strong></label>
+        <label class="form-label"> <strong>Hora (hs) *</strong></label>
         <select v-model="form.horaSalidaHour" class="form-select" required>
           <option value="" disabled>HH</option>
           <option v-for="h in horasDisponibles" :key="h" :value="h">
@@ -247,7 +249,7 @@ const volver = () => {
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label"> <strong>Campaña*</strong></label>
+        <label class="form-label"> <strong>Campaña *</strong></label>
         <select v-model="form.tema" class="form-select" required>
           <option value="" disabled>Seleccione una campaña</option>
           <option v-for="(label, value) in territorioStore.temas" :key="value" :value="value">{{ label }}</option>
@@ -259,10 +261,35 @@ const volver = () => {
         <input v-model="form.observaciones" class="form-control" type="text" placeholder="Todos"/>
       </div>
 
-      <div class="col-12 d-flex justify-content-end gap-2">
+      <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
         <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
         <button type="submit" class="btn btn-primary">{{ salidaStore.salidaloadingSave ? 'Creando...' : 'Crear Salida' }}</button>
       </div>
     </form>
+    </div>
   </div>
 </template>
+<style scoped>
+.form-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1px solid #eadff7;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .form-shell {
+    padding: 1.25rem;
+  }
+}
+</style>

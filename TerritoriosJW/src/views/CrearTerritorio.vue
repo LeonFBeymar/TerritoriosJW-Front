@@ -70,7 +70,9 @@ const volver = () => {
 
 <template>
   <div class="container py-4">
-    <h1 class="mb-4">Crear Territorio</h1>
+    <h1 class="mb-2">Crear Territorio</h1>
+    <p class="text-muted mb-4">Complete los datos para registrar un nuevo territorio.</p>
+    <div class="form-shell">
     <form @submit.prevent="crearTerritorio" class="row g-3">
       <div class="col-md-6">
         <label class="form-label"><strong>Nombre *</strong></label>
@@ -116,13 +118,36 @@ const volver = () => {
         <label class="form-label"><strong>GeoJson (Opcional)</strong></label>
         <textarea v-model="form.geoJson" class="form-control" rows="2" placeholder="Pegue aquí el GeoJson si lo tiene..."></textarea>
       </div>
-      <div class="col-12 d-flex justify-content-end gap-2">
+      <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
          <button type="button" class="btn btn-secondary" @click="volver()">Volver</button>
         <button type="submit" class="btn btn-primary">{{ store.territorioloadingSave ? 'Creando...' : 'Crear Territorio' }}</button>
       </div>
     </form>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.form-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1px solid #eadff7;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .form-shell {
+    padding: 1.25rem;
+  }
+}
 </style>

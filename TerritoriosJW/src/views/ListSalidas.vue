@@ -183,6 +183,19 @@ const reportar = (salidaId, territorioId) => {
 const getReporteSalida = (salidaId) => reporteStore.getReporteByIdSalida(salidaId);
 const tieneReporte = (salidaId) => getReporteSalida(salidaId) !== undefined;
 
+const formatFecha = (value) => {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("es-AR", { timeZone: "UTC" });
+};
+
+const formatHora = (value) => {
+  if (!value) return "";
+  return new Date(value).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const descargarReporteExcel = async () => {
   if (!salidaSemanalSeleccionada.value) {
     return;
@@ -255,23 +268,23 @@ const descargarReporteExcel = async () => {
       </div>
     <!-- <div class="row"> -->
       <div v-else class="col-12 mb-3" v-for="salida in salidasPaginaActual" :key="salida.id">
-        <div class="card border-primary border-2 shadow-sm">
+        <div class="card salida-card border-0 shadow-sm">
           <div
-            class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+            class="card-header salida-card-header text-white d-flex justify-content-between align-items-center"
           >
-            <span>Salida #{{ salida.id }}</span>
-            <span class="text-wite"
-              ><strong>Semana de Salida:
-              {{
+            <span class="fw-semibold"><i class="bi bi-journal-check me-2"></i>Salida #{{ salida.id }}</span>
+            <span class="badge salida-semana-badge"
+              >Semana: {{
                 store.getSalidaSemanalPorId(salida.salidaSemanalId)
                   ?.semanaInicio || "N/A"
-              }}</strong>
-            </span>
+              }}</span
+            >
           </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-6 col-md-4 mb-2">
-                <strong>Conductores:</strong>
+          <div class="card-body salida-card-body">
+            <div class="row g-3">
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="dato-item">
+                <strong class="dato-label">Conductores</strong>
                 <span v-if="!usuarioInicializados || usuarioStore.usuarioLoading && !usuarioStore.error">
                   Cargando conductores...
                 </span>
@@ -283,51 +296,51 @@ const descargarReporteExcel = async () => {
                     {{ usuarioStore.getUsuarioPorId(uid)?.nombre || 'N/A' }}{{ usuarioStore.getUsuarioPorId(uid)?.apellido ? ' ' + usuarioStore.getUsuarioPorId(uid)?.apellido : '' }}<span v-if="idx < salida.usuarioIds.length - 1">, </span>
                   </span>
                 </span>
-              </div>
-              <div class="col-6 col-md-4 mb-2">
-                <div v-if="!territoriosInicializados || territorioStore.territorioloading && !territorioStore.error">
-                  Cargando territorios...
-                </div>
-                <div v-else-if="territorioStore.error" class="alert alert-danger">
-                  {{ territorioStore.error }}
-                </div>
-                <div v-else>
-                  <strong>Territorio:</strong>
-                  {{
-                    territorioStore.getTerritorioPorId(salida.territorioId)
-                    ?.nombre || "N/A"
-                  }}
                 </div>
               </div>
-              <div class="col-6 col-md-4 mb-2">
-                <strong>Punto de Encuentro:</strong> {{ salida.puntoEncuentro }}
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="dato-item">
+                  <strong class="dato-label">Territorio</strong>
+                  <div v-if="!territoriosInicializados || territorioStore.territorioloading && !territorioStore.error">
+                    Cargando territorios...
+                  </div>
+                  <div v-else-if="territorioStore.error" class="alert alert-danger py-1 px-2 mb-0 mt-1">
+                    {{ territorioStore.error }}
+                  </div>
+                  <div v-else>
+                    {{
+                      territorioStore.getTerritorioPorId(salida.territorioId)
+                      ?.nombre || "N/A"
+                    }}
+                  </div>
+                </div>
               </div>
-              <div class="col-12 mb-2">
-                <strong>Dia:</strong>
-                {{
-                  salida.horaSalida
-                    ? new Date(salida.horaSalida).toLocaleDateString()
-                    : ""
-                }}
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="dato-item">
+                  <strong class="dato-label">Punto de encuentro</strong>
+                  <span>{{ salida.puntoEncuentro }}</span>
+                </div>
               </div>
-              <div class="col-12 mb-2">
-                <strong>Hora:</strong>
-                {{
-                  salida.horaSalida
-                    ? new Date(salida.horaSalida).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : ""
-                }}
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="dato-item">
+                  <strong class="dato-label">Dia</strong>
+                  <span>{{ formatFecha(salida.horaSalida) }}</span>
+                </div>
               </div>
-              <div class="col-12 mb-2">
-                <!-- Por el momento observaciones es usado como grupo/s -->
-                <strong>Grupo/s:</strong>
-                {{ salida.observaciones || "Todos" }}
+              <div class="col-12 col-md-6 col-lg-3">
+                <div class="dato-item">
+                  <strong class="dato-label">Hora</strong>
+                  <span>{{ formatHora(salida.horaSalida) }}</span>
+                </div>
+              </div>
+              <div class="col-12 col-md-6 col-lg-6">
+                <div class="dato-item">
+                  <strong class="dato-label">Grupo/s</strong>
+                  <span>{{ salida.observaciones || "Todos" }}</span>
+                </div>
               </div>
 
-              <div>
+              <div class="col-12">
                 <div v-if="!reportesInicializados || reporteStore.reporteLoading" class="col-12 mb-2 alert alert-info">
                   Cargando reporte...
                 </div>
@@ -338,19 +351,21 @@ const descargarReporteExcel = async () => {
 
                 <div
                   v-else-if="tieneReporte(salida.id)"
-                  class="col-12 mb-2"
+                  class="col-12 mb-2 d-flex align-items-center gap-2"
                 >
-                  <strong>Territorio Concluido-Estado:</strong>
-                  {{
-                    territorioStore.getNombreEstado(
-                      getReporteSalida(salida.id)?.estadoTerritorio,
-                    ) || "N/A"
-                  }}
+                  <strong>Territorio concluido:</strong>
+                  <span class="badge text-bg-success-subtle border border-success-subtle text-success-emphasis">
+                    {{
+                      territorioStore.getNombreEstado(
+                        getReporteSalida(salida.id)?.estadoTerritorio,
+                      ) || "N/A"
+                    }}
+                  </span>
                 </div>
 
-                <div v-if="reportesInicializados && !reporteStore.reporteLoading" class="col-12 mb-2 d-flex gap-2">
+                <div v-if="reportesInicializados && !reporteStore.reporteLoading" class="col-12 mb-2 d-flex gap-2 flex-wrap justify-content-end border-top pt-3 mt-3">
                   <div v-if="!tieneReporte(salida.id)">
-                    <button class="btn btn-primary" type="button" @click="editar(salida.id)">Editar</button>
+                    <button class="btn btn-outline-primary" type="button" @click="editar(salida.id)">Editar</button>
                   </div>
 
                   <div v-if="!tieneReporte(salida.id)">
@@ -485,14 +500,46 @@ const descargarReporteExcel = async () => {
   <!-- Fin Modal -->
 </template>
 <style scoped>
-.card.border-primary {
-  border-color: #6f42c1 !important; /* morado Bootstrap */
-}
-.card-header.bg-primary {
-  background-color: #6f42c1 !important;
-}
 .style-color {
   background-color: #4d087a !important;
+}
+
+.salida-card {
+  border: 1px solid #e8ddf1;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.salida-card-header {
+  background: linear-gradient(120deg, #5f2b8a, #7a40a8);
+  padding: 0.85rem 1rem;
+}
+
+.salida-semana-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-weight: 500;
+}
+
+.salida-card-body {
+  background: linear-gradient(180deg, #fff 0%, #fbf8ff 100%);
+}
+
+.dato-item {
+  background: #ffffff;
+  border: 1px solid #efe8f7;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  height: 100%;
+}
+
+.dato-label {
+  display: block;
+  color: #5e3a7f;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
 }
 
 .acciones-salidas > * {

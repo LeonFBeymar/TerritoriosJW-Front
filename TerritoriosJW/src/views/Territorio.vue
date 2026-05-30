@@ -161,89 +161,85 @@ const descargarImagen = async () => {
         <i class="bi bi-exclamation-triangle me-2"></i>{{ store.error }}
       </div>
       <div v-else class="col-12">
-        <div class="mb-2">
-          <p>
-            <strong>Estado del Territorio:</strong>
-            <span :class="['badge ms-2', getBadgeClass(territorio?.estado)]">
-              {{ store.getNombreEstado(territorio?.estado) }}
-            </span>
-          </p>
-        </div>
+        <div class="detalle-shell">
+          <div class="row g-3">
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Estado del Territorio</div>
+                <span :class="['badge', getBadgeClass(territorio?.estado)]">
+                  {{ store.getNombreEstado(territorio?.estado) }}
+                </span>
+              </div>
+            </div>
 
-        <div class="mb-2">
-          <p>
-            <strong>Prioridad:</strong>
-            <span class="ms-2">{{
-              store.getNombrePrioridad(territorio?.prioridad)
-            }}</span>
-          </p>
-        </div>
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Prioridad</div>
+                <div>{{ store.getNombrePrioridad(territorio?.prioridad) }}</div>
+              </div>
+            </div>
 
-        <div class="mb-2">
-          <p>
-            <strong>Última Salida Realizada:</strong>
-            <span class="ms-2">{{ formatDateOnly(territorio?.ultimaSalida) }}</span>
-          </p>
-        </div>
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Ultima Campaña Realizada</div>
+                <div>{{ store.getNombreTema(territorio?.tema) || "Sin Campaña" }}</div>
+              </div>
+            </div>
 
-        <div class="mb-2">
-          <p>
-            <strong>Fecha de Inicio:</strong>
-            <span class="ms-2">{{ formatDateOnly(territorio?.fechaInicio) }}</span>
-          </p>
-        </div>
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Ultimo Turno Realizado</div>
+                <div>{{ store.getNombreTurno(territorio?.turno) }}</div>
+              </div>
+            </div>
 
-        <div class="mb-2">
-          <p>
-            <strong>Fecha Completado:</strong>
-            <span class="ms-2">{{ formatDateOnly(territorio?.fechaCompletado) }}</span>
-          </p>
-        </div>
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Area</div>
+                <div>{{ territorio?.area ? territorio.area + " m²" : "Sin Area" }}</div>
+              </div>
+            </div>
 
-        <div class="mb-3">
-          <p>
-            <strong>Ultima Campaña Realizada:</strong>
-            <span class="ms-2 italic">{{
-              store.getNombreTema(territorio?.tema) || "Sin Campaña"
-            }}</span>
-          </p>
-        </div>
-        <div class="mb-3">
-          <p>
-            <strong>Notas Adicionales:</strong>
-            <span class="ms-2 text-secondary italic">{{
-              territorio?.atributo1 || "Sin Notas"
-            }}</span>
-          </p>
-        </div>
-        <div class="mb-3">
-          <p>
-            <strong>Ultimo Turno Realizado:</strong>
-            <span class="ms-2 italic">{{
-              store.getNombreTurno(territorio?.turno)
-            }}</span>
-          </p>
-        </div>
-        <div class="mb-2">
-          <p>
-            <strong>Área:</strong>
-            <span class="ms-2 text-secondary">{{
-              territorio?.area ? territorio.area + " m²" : "Sin Area"
-            }}</span>
-          </p>
-        </div>
-        <div class="mb-2">
-          <p>
-            <strong>GeoJson:</strong>
-            <code class="ms-2 text-muted small">{{
-              territorio?.geoJson || "Sin datos"
-            }}</code>
-          </p>
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Ultima Salida Realizada</div>
+                <div>{{ formatDateOnly(territorio?.ultimaSalida) }}</div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Fecha de Inicio</div>
+                <div>{{ formatDateOnly(territorio?.fechaInicio) }}</div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="dato-item h-100">
+                <div class="dato-label">Fecha Completado</div>
+                <div>{{ formatDateOnly(territorio?.fechaCompletado) }}</div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="dato-item h-100">
+                <div class="dato-label">Notas Adicionales</div>
+                <div>{{ territorio?.atributo1 || "Sin Notas" }}</div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="dato-item">
+                <div class="dato-label">GeoJson</div>
+                <code class="text-muted small">{{ territorio?.geoJson || "Sin datos" }}</code>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 detalle-shell">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <div>
           <p class="fw-bold mb-0">
@@ -260,14 +256,7 @@ const descargarImagen = async () => {
             <img
               :src="imagen"
               alt="miniatura"
-              class="me-2"
-              style="
-                width: 48px;
-                height: 48px;
-                object-fit: cover;
-                border-radius: 6px;
-                border: 1px solid #e9ecef;
-              "
+              class="me-2 miniatura-territorio"
             />
             <button
               class="btn btn-primary btn-sm"
@@ -282,13 +271,7 @@ const descargarImagen = async () => {
 
       <div
         id="map"
-        class="border shadow-sm"
-        style="
-          height: 450px;
-          width: 100%;
-          border-radius: 12px;
-          background-color: #f8f9fa;
-        "
+        class="border shadow-sm map-container"
       ></div>
     </div>
 
@@ -302,3 +285,49 @@ const descargarImagen = async () => {
     </div>
   </div>
 </template>
+<style scoped>
+.detalle-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1px solid #eadff7;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.dato-item {
+  background: #ffffff;
+  border: 1px solid #efe8f7;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+
+.dato-label {
+  color: #5e3a7f;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+}
+
+.miniatura-territorio {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.map-container {
+  height: 450px;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+}
+
+@media (min-width: 768px) {
+  .detalle-shell {
+    padding: 1.25rem;
+  }
+}
+</style>

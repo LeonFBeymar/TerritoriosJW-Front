@@ -31,7 +31,9 @@ const volver = () => {
 </script>
 <template>
     <div class="container py-4">
-        <h1 class="mb-4 ">Crear Conductor</h1>
+        <h1 class="mb-2">Crear Conductor</h1>
+        <p class="text-muted mb-4">Complete los datos para registrar un nuevo conductor.</p>
+        <div class="form-shell">
         <form @submit.prevent="crearUsuario" class="row g-3">
             <div class="col-md-6">
                 <label for="nombre" class="form-label"> <strong>Nombre *</strong></label>
@@ -65,10 +67,35 @@ const volver = () => {
                     </button>
                 </div>
             </div>
-            <div class="col-12 d-flex justify-content-end gap-2">
+                        <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
                 <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
                 <button type="submit" class="btn btn-primary">{{ store.usuarioLoadingSave ? 'Creando...' : 'Crear Usuario' }}</button>
             </div>
         </form>
+                </div>
     </div>
 </template>
+<style scoped>
+.form-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    border: 1px solid #eadff7;
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+    margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+    .form-shell {
+        padding: 1.25rem;
+    }
+}
+</style>
