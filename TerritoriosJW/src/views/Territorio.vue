@@ -117,6 +117,23 @@ const getBadgeClass = (estado) => {
   };
   return colors[estado] || "bg-light text-dark";
 };
+
+const formatDateOnly = (value) => {
+  if (!value) return "Sin registros";
+  
+  // Maneja DateOnly (yyyy-MM-dd) sin convertir zona horaria.
+  const raw = String(value);
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const [, year, month, day] = match;
+    return `${day}/${month}/${year}`;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("es-AR", { timeZone: "UTC" }).format(parsed);
+};
+
 const descargarImagen = async () => {
   downLoadingImage.value = true;
   const link = document.createElement("a");
@@ -165,11 +182,21 @@ const descargarImagen = async () => {
         <div class="mb-2">
           <p>
             <strong>Última Salida Realizada:</strong>
-            <span class="ms-2">{{
-              territorio?.ultimaSalida
-                ? territorio.ultimaSalida
-                : "Sin registros"
-            }}</span>
+            <span class="ms-2">{{ formatDateOnly(territorio?.ultimaSalida) }}</span>
+          </p>
+        </div>
+
+        <div class="mb-2">
+          <p>
+            <strong>Fecha de Inicio:</strong>
+            <span class="ms-2">{{ formatDateOnly(territorio?.fechaInicio) }}</span>
+          </p>
+        </div>
+
+        <div class="mb-2">
+          <p>
+            <strong>Fecha Completado:</strong>
+            <span class="ms-2">{{ formatDateOnly(territorio?.fechaCompletado) }}</span>
           </p>
         </div>
 
@@ -192,7 +219,7 @@ const descargarImagen = async () => {
         <div class="mb-3">
           <p>
             <strong>Ultimo Turno Realizado:</strong>
-            <span class="ms-2 text-secondary italic">{{
+            <span class="ms-2 italic">{{
               store.getNombreTurno(territorio?.turno)
             }}</span>
           </p>

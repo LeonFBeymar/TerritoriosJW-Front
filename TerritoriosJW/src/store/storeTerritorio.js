@@ -131,7 +131,7 @@ export const useTerritorioStore = defineStore('territorio', {
                 2: '(S-D)',
                 3: '(L-V-Mes)',
                 4: '(S-D-Mes)',
-                5: 'General',
+                5: '(General)',
             };            
             return prioridades[idPrioridad] || 'Desconocido';
         },

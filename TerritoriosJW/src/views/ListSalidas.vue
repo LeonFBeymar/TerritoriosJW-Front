@@ -214,7 +214,7 @@ const descargarReporteExcel = async () => {
         :disabled="store.cargandoExcel" 
         @click="store.descargarExcelSalidas()">
         <span v-if="store.cargandoExcel" class="spinner-border spinner-border-sm me-1"></span>
-        {{ store.cargandoExcel ? 'Generando...' : 'Descargar Excel' }}
+        {{ store.cargandoExcel ? 'Generando...' : 'Descargar Salidas Excel' }}
       </button>
 
       <select
