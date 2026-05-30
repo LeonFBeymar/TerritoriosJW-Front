@@ -81,29 +81,27 @@ const formatFechaCompletado = (fecha) => {
 
 <template>
     <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
             <h1 class="mb-0 d-flex align-items-center">
-                <i class="bi bi-map"></i>Territorios
+                <i class="bi bi-map me-2"></i>Territorios
             </h1>
             <button class="btn btn-primary d-flex align-items-center" @click="createTerritorio">
                 <i class="bi bi-plus-circle me-2"></i>Crear Territorio
             </button>
         </div>
         
-        <div>
-            <button class="btn btn-info mb-3 me-3" @click="showEstadosInfo = !showEstadosInfo">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-outline-info" @click="showEstadosInfo = !showEstadosInfo">
                 <strong>  
                     {{ showEstadosInfo ? 'Ocultar' : 'Ver' }} info de Estados ℹ️
                 </strong> 
             </button>
-            <button class="btn btn-info mb-3" @click="showCampañaInfo = !showCampañaInfo">
+            <button class="btn btn-outline-info" @click="showCampañaInfo = !showCampañaInfo">
                 <strong>  
                     {{ showCampañaInfo ? 'Ocultar' : 'Ver' }} info de Campaña ℹ️
                 </strong> 
             </button>
-
-
-                </div>
+        </div>
             <div v-if="showEstadosInfo" class="alert alert-info">
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -158,8 +156,8 @@ const formatFechaCompletado = (fecha) => {
                 </p>
             </div>
         </div>
-
-            <div class="row g-3 mb-4">
+    <br>
+            <div class="row g-3 mb-4 filtros-panel">
                 <!-- Filtrar por estado -->
                 <div class="col-md-3">
                     <label class="form-label"><strong>Estado</strong></label>
@@ -200,6 +198,7 @@ const formatFechaCompletado = (fecha) => {
                     </select>
                 </div>
             </div>
+            <br>
         <div class="row g-4">
             <div v-if="store.territorioloading && !error" class="alert alert-info mt-4">
                 <i class="bi bi-info-circle me-2"></i>Cargando territorios...
@@ -211,17 +210,17 @@ const formatFechaCompletado = (fecha) => {
                 <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
             </div>
             <div v-else class="col-md-6 col-lg-4" v-for="territorio in territoriosFiltrados " :key="territorio.id">
-                <div class="card h-100 shadow-sm border-1">
+                <div class="card territorio-card h-100 shadow-sm border-0">
                     <div class="card-body d-flex flex-column justify-content-between">
-                        <div class="mb-1" @click="territorioView(territorio.id)" style="cursor:pointer">
-                            <div class="d-flex justify-content-between ">
+                        <div class="mb-2" @click="territorioView(territorio.id)" style="cursor:pointer">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
                                 <div>
                                     <h4 class="card-title mb-1 d-flex align-items-center">
                                         <i class="bi bi-geo-alt me-2 text-primary"></i>
                                         {{ territorio.nombre }}
                                     </h4>
                                 </div>
-                                <div class="mb-1">
+                                <div class="mb-1 text-end">
                                     <h6 class="fw-bold">Estado: 
                                         <span :class="['badge', getBadgeClass(territorio.estado)]" style="font-size: 0.85rem;">
                                             {{ store.getNombreEstado(territorio.estado) }}
@@ -229,14 +228,14 @@ const formatFechaCompletado = (fecha) => {
                                     </h6>
                                 </div>
                             </div>
-                            <div class="d-inline-flex align-items-center p-1 mb-2 rounded shadow-sm" style="background-color: #f3e5f5; border: 0.1px solid #ce93d8;">
+                            <div class="d-inline-flex align-items-center px-2 py-1 mb-2 rounded-3 campaign-pill">
                                 <span class="text-dark">
                                     <i class="bi bi-calendar-event"></i> <strong>Campaña:</strong> 
                                     <span class="ms-1">{{ store.getNombreTema(territorio.tema) }}</span>
                                 </span>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mt-1">
+                        <div class="d-flex justify-content-between align-items-center mt-1 pt-2 border-top gap-2">
                             <div class="small text-muted">
                                 <i class="bi bi-check2-circle me-1"></i>
                                 <strong>Completado:</strong> {{ formatFechaCompletado(territorio.fechaCompletado) }}
@@ -256,5 +255,22 @@ const formatFechaCompletado = (fecha) => {
         </div>
     </div>
 </template>
-<style>
+<style scoped>
+.filtros-panel {
+    background: linear-gradient(180deg, #faf6ff 0%, #ffffff 100%);
+    border: 1px solid #eee4f8;
+    border-radius: 12px;
+    padding: 0.85rem;
+}
+
+.territorio-card {
+    border: 1px solid #e9ddf5;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #fcf9ff 100%);
+}
+
+.campaign-pill {
+    background-color: #f3e5f5;
+    border: 1px solid #ce93d8;
+}
 </style>    

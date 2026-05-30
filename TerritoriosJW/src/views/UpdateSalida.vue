@@ -160,7 +160,7 @@ const volver = () => router.push("/salidas");
         </h1>
         <div v-if="store.salidaloading" class="alert alert-info">Cargando salida...</div>
         <div v-else-if="!salida" class="alert alert-danger">Salida no encontrada</div>
-        <div v-else class="bg-white p-4 rounded shadow-sm">
+        <div v-else class="form-shell">
     <form @submit.prevent="editar" class="row g-3">
       <div class="col-md-6">
         <label class="form-label"> <strong>Conductor principal *</strong></label>
@@ -215,7 +215,7 @@ const volver = () => router.push("/salidas");
         <input v-model="form.fechaSalida" type="date" class="form-control" required />
       </div>
       <div class="col-md-3">
-        <label class="form-label"> <strong>Hora (hs)  *</strong></label>
+        <label class="form-label"> <strong>Hora (hs) *</strong></label>
         <select v-model="form.horaSalidaHour" class="form-select" required>
           <option value="" disabled>HH</option>
           <option v-for="h in 24" :key="h-1" :value="(h-1)">
@@ -240,7 +240,7 @@ const volver = () => router.push("/salidas");
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label"> <strong>Campaña*</strong></label>
+        <label class="form-label"> <strong>Campaña *</strong></label>
         <select v-model="form.tema" class="form-select" required>
           <option value="" disabled>Seleccione una campaña</option>
           <option v-for="(label, value) in territorioStore.temas" :key="value" :value="value">{{ label }}</option>
@@ -251,7 +251,7 @@ const volver = () => router.push("/salidas");
         <label class="form-label"> <strong>Grupo/s(Opcional)</strong></label> 
         <input v-model="form.observaciones" class="form-control" type="text" placeholder="Todos"/>
       </div>
-      <div class="col-12 d-flex justify-content-end gap-2">
+      <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
         <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
         <button type="submit" class="btn btn-primary">{{ store.salidaloadingSave ? 'Actualizando...' : 'Actualizar' }}</button>
       </div>
@@ -260,3 +260,27 @@ const volver = () => router.push("/salidas");
 
     </div>
 </template>
+<style scoped>
+.form-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+  border: 1px solid #eadff7;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .form-shell {
+    padding: 1.25rem;
+  }
+}
+</style>

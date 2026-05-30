@@ -304,10 +304,10 @@ const actualizarTerritorio = async () => {
         </h1>
         <div v-if="store.territorioloading" class="alert alert-info">Cargando territorio...</div>
         <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
-        <form v-else @submit.prevent="actualizarTerritorio" class="bg-white p-4 rounded shadow-sm">
+        <form v-else @submit.prevent="actualizarTerritorio" class="form-shell">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label for="estado" class="form-label"><strong>Estado*</strong> <i class="bi bi-flag ms-1"></i></label>
+                    <label for="estado" class="form-label"><strong>Estado *</strong> <i class="bi bi-flag ms-1"></i></label>
                     <select id="estado" v-model.number="form.estado" class="form-select" :disabled="!puedeEditarEstado" required>
                         <option v-for="opcion in opcionesEstado" :key="opcion.value" :value="opcion.value">{{ opcion.label }}</option>
                     </select>
@@ -315,26 +315,26 @@ const actualizarTerritorio = async () => {
                     <div class="form-text" v-else>Este estado no se puede editar.</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="prioridad" class="form-label"><strong>Prioridad*</strong> <i class="bi bi-exclamation-triangle ms-1"></i></label>
+                    <label for="prioridad" class="form-label"><strong>Prioridad *</strong> <i class="bi bi-exclamation-triangle ms-1"></i></label>
                     <select id="prioridad" v-model.number="form.prioridad" class="form-select" required>
                         <option v-for="(label, value) in store.prioridades" :key="value" :value="value">{{ label }}</option>
                     </select>
                     <div class="form-text">Define la prioridad de visita para este territorio.</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="ultimaSalida" class="form-label"><strong>Última Salida*</strong> <i class="bi bi-calendar-event ms-1"></i></label>
+                    <label for="ultimaSalida" class="form-label"><strong>Última Salida *</strong> <i class="bi bi-calendar-event ms-1"></i></label>
                     <input type="date" id="ultimaSalida" v-model="form.ultimaSalida" class="form-control" required/>
                     <div class="form-text">Fecha de la última salida realizada.</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="tema" class="form-label"><strong>Campaña*</strong></label>
+                    <label for="tema" class="form-label"><strong>Campaña *</strong></label>
                     <select id="tema" v-model.number="form.tema" class="form-select" required>
                         <option v-for="(label, value) in store.temas" :key="value" :value="value">{{ label }}</option>
                     </select>
                     <div class="form-text">Seleccione la campaña para el territorio.</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="turno" class="form-label"><strong>Turno*</strong></label>
+                    <label for="turno" class="form-label"><strong>Turno *</strong></label>
                     <select id="turno" v-model.number="form.turno" class="form-select" required>
                         <option :value="0">Mañana</option>
                         <option :value="1">Tarde</option>
@@ -342,14 +342,14 @@ const actualizarTerritorio = async () => {
                     <div class="form-text">Define el turno del territorio.</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="atributo1" class="form-label"><strong>Notas adicionales</strong> <i class="bi bi-info-circle ms-1"></i></label>
-                    <input type="text" id="atributo1" v-model="form.atributo1" class="form-control" />
-                    <div class="form-text">Información adicional del territorio.</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="area" class="form-label"><strong>Área (m²)</strong> <i class="bi bi-rulers ms-1"></i></label>
+                    <label for="area" class="form-label"><strong>Área (m²)(Opcional)</strong> <i class="bi bi-rulers ms-1"></i></label>
                     <input type="number" id="area" v-model.number="form.area" class="form-control" min="0" />
                     <div class="form-text">Superficie aproximada del territorio.</div>
+                </div>
+                <div class="col-12">
+                    <label for="atributo1" class="form-label"><strong>Notas adicionales</strong> <i class="bi bi-info-circle ms-1"></i></label>
+                    <textarea id="atributo1" v-model="form.atributo1" class="form-control notas-adicionales-input" rows="3"></textarea>
+                    <div class="form-text">Información adicional del territorio.</div>
                 </div>
                 <div class="col-12">
                     <label for="geoJson" class="form-label"><strong>GeoJSON</strong> <i class="bi bi-geo-alt ms-1"></i></label>
@@ -361,11 +361,11 @@ const actualizarTerritorio = async () => {
                     <div id="map" class="map-container"></div>
                 </div>
             </div>
-            <div class="mt-4 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary px-4">
+            <div class="mt-4 border-top pt-3 acciones-form">
+                <button type="submit" class="btn btn-primary px-4 accion-btn">
                     <i class="bi bi-save me-2"></i>{{store.territorioloadingSave ? 'Actualizando...' : 'Actualizar Cambios'}}
                 </button>
-                <button type="button" class="btn btn-secondary ms-2 px-4" @click="router.push('/territorios')">
+                <button type="button" class="btn btn-secondary px-4 accion-btn" @click="router.push('/territorios')">
                     <i class="bi bi-x-circle me-2"></i>Cancelar
                 </button>
             </div>
@@ -373,11 +373,59 @@ const actualizarTerritorio = async () => {
     </div>
 </template>
 <style scoped>
+.form-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    border: 1px solid #eadff7;
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 0.35rem 0.8rem rgba(51, 21, 84, 0.08);
+}
+
+.form-label {
+    margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+.notas-adicionales-input {
+    min-height: 110px;
+    resize: vertical;
+}
+
 .map-container {
     width: 100%;
     height: 520px;
     border-radius: 8px;
     border: 1px solid #dee2e6;
     overflow: hidden;
+}
+
+.acciones-form {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+}
+
+.accion-btn {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .form-shell {
+        padding: 1.25rem;
+    }
+
+    .acciones-form {
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .accion-btn {
+        width: auto;
+    }
 }
 </style>
