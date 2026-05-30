@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useSalidaStore } from "../store/storeSalidas";
 import { useReporteStore } from "../store/storeReporte";
 import { useTerritorioStore } from "../store/storeTerritorio";
@@ -25,12 +25,28 @@ const form = ref({
   notas: "",
 });
 
+const territorioEsIncompletoPorFechas = ref(false);
+
+const estadosDisponiblesReporte = computed(() => {
+  return Object.entries(territorioStore.estadosForReporte).filter(([value]) => {
+    // Si tiene fechaInicio y no tiene fechaCompletado, se considera Incompleto.
+    if (territorioEsIncompletoPorFechas.value && Number(value) === 3) {
+      return false;
+    }
+    return true;
+  });
+});
+
 const drawnGeoJson = ref("");
 
 onMounted(async () => {
   await store.fetchSalidas();
   await reporteStore.fetchReportes();
   await store.fetchSalida(router.currentRoute.value.params.id);
+  await territorioStore.fetchTerritorio(territorioId);
+  const fechaInicio = territorioStore.territorio?.fechaInicio;
+  const fechaCompletado = territorioStore.territorio?.fechaCompletado;
+  territorioEsIncompletoPorFechas.value = Boolean(fechaInicio) && !fechaCompletado;
   console.log(router.currentRoute.value.params.id);
   console.log("Salida obtenida:", store.salida.tema);
   reporte.value = reporteStore.getReporteByIdSalida(
@@ -331,7 +347,7 @@ const crearReporte = async () => {
         <label class="form-label">Estado del Territorio</label>
         <select v-model="form.estadoTerritorio" class="form-select" required>
           <option value="" disabled>Seleccione el estado del territorio</option>
-          <option v-for="(label, value) in territorioStore.estadosForReporte" :key="value" :value="value">
+          <option v-for="([value, label]) in estadosDisponiblesReporte" :key="value" :value="value">
             {{ label }}
           </option>
         </select>

@@ -37,15 +37,21 @@ const territoriosFiltrados = computed(() => {
 
     /* ORDEN FECHA */
     if (ordenFecha.value === 'asc') {
-        lista.sort((a, b) =>
-            new Date(a.ultimaSalida) - new Date(b.ultimaSalida)
-        );
+        lista.sort((a, b) => {
+            if (!a.fechaCompletado && !b.fechaCompletado) return 0;
+            if (!a.fechaCompletado) return 1;
+            if (!b.fechaCompletado) return -1;
+            return new Date(a.fechaCompletado) - new Date(b.fechaCompletado);
+        });
     }
 
     if (ordenFecha.value === 'desc') {
-        lista.sort((a, b) =>
-            new Date(b.ultimaSalida) - new Date(a.ultimaSalida)
-        );
+        lista.sort((a, b) => {
+            if (!a.fechaCompletado && !b.fechaCompletado) return 0;
+            if (!a.fechaCompletado) return 1;
+            if (!b.fechaCompletado) return -1;
+            return new Date(b.fechaCompletado) - new Date(a.fechaCompletado);
+        });
     }
 
     return lista;
@@ -65,6 +71,11 @@ const getBadgeClass = (estado) => {
 const createTerritorio = () => router.push("/crearterritorio");
 const territorioView = (id) => router.push(`/territorio/${id}`);
 const editar = (id) => router.push(`/update-terrirorio/${id}`);
+
+const formatFechaCompletado = (fecha) => {
+    if (!fecha) return 'Sin completar';
+    return new Date(fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' });
+};
 </script>
 
 
@@ -166,7 +177,7 @@ const editar = (id) => router.push(`/update-terrirorio/${id}`);
 
                 <!-- Ordenar por fecha -->
                 <div class="col-md-3">
-                    <label class="form-label"><strong>Ordenar</strong></label>
+                    <label class="form-label"><strong>Ult. Completado</strong></label>
                     <select v-model="ordenFecha" class="form-select">
                     <option value="">Sin ordenar</option>
                     <option value="asc">Más antigua</option>
@@ -225,9 +236,13 @@ const editar = (id) => router.push(`/update-terrirorio/${id}`);
                                 </span>
                             </div>
                         </div>
-                        <div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <div class="small text-muted">
+                                <i class="bi bi-check2-circle me-1"></i>
+                                <strong>Completado:</strong> {{ formatFechaCompletado(territorio.fechaCompletado) }}
+                            </div>
                             <div class="d-flex justify-content-end gap-2 mt-auto">
-                                <button v-if="territorio.estado != 2" class="btn btn-outline-primary btn-sm d-flex align-items-center" @click.stop="editar(territorio.id)">
+                                <button v-if="territorio.estado != 2 && territorio.estado != 4" class="btn btn-outline-primary btn-sm d-flex align-items-center" @click.stop="editar(territorio.id)">
                                     <i class="bi bi-pencil-square me-1"></i>Editar
                                 </button>
                                 <button class="btn btn-outline-secondary btn-sm d-flex align-items-center" @click.stop="territorioView(territorio.id)">

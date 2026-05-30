@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
 import L from 'leaflet';
@@ -11,6 +11,7 @@ const store = useTerritorioStore();
 const router = useRouter();
 const territorio = ref(null);
 const error = ref(null);
+const estadoOriginal = ref(null);
 const form = ref({
     geoJson: '',
     estado: 1,
@@ -21,12 +22,35 @@ const form = ref({
     atributo1: '',
     tema: 1,
 });
+
+const puedeEditarEstado = computed(() => {
+    return Number(estadoOriginal.value) === 5 || Number(estadoOriginal.value) === 3;
+});
+
+const opcionesEstado = computed(() => {
+    const estadoActual = Number(estadoOriginal.value);
+
+    if (Number.isNaN(estadoActual)) {
+        return [];
+    }
+
+    if (!puedeEditarEstado.value) {
+        return [{ value: estadoActual, label: store.getNombreEstado(estadoActual) }];
+    }
+
+    return [
+        { value: estadoActual, label: `${store.getNombreEstado(estadoActual)} (Actual)` },
+        { value: 1, label: store.getNombreEstado(1) },
+    ];
+});
+
 onMounted(async () => {
   await store.fetchTerritorios();
   const territorioId = router.currentRoute.value.params.id;
   territorio.value = store.getTerritorioPorId(Number(territorioId));
 
   if (territorio.value) {
+    estadoOriginal.value = territorio.value.estado;
     form.value.geoJson = territorio.value.geoJson || '';
     form.value.estado = territorio.value.estado;
     form.value.prioridad = territorio.value.prioridad;
@@ -284,10 +308,11 @@ const actualizarTerritorio = async () => {
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="estado" class="form-label"><strong>Estado*</strong> <i class="bi bi-flag ms-1"></i></label>
-                    <select id="estado" v-model.number="form.estado" class="form-select" required>
-                        <option v-for="(label, value) in store.estados" :key="value" :value="value">{{ label }}</option>
+                    <select id="estado" v-model.number="form.estado" class="form-select" :disabled="!puedeEditarEstado" required>
+                        <option v-for="opcion in opcionesEstado" :key="opcion.value" :value="opcion.value">{{ opcion.label }}</option>
                     </select>
-                    <div class="form-text">Selecciona el estado actual del territorio.</div>
+                    <div class="form-text" v-if="puedeEditarEstado">Solo puede cambiar el estado a En espera.</div>
+                    <div class="form-text" v-else>Este estado no se puede editar.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="prioridad" class="form-label"><strong>Prioridad*</strong> <i class="bi bi-exclamation-triangle ms-1"></i></label>

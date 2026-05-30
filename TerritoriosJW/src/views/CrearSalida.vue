@@ -35,6 +35,49 @@ const horasDisponibles = computed(() => {
   return Array.from({ length: 11 }, (_, i) => i + 8);
 });
 
+const getEstadoColor = (estado) => {
+  const colors = {
+    1: '#6c757d',
+    2: '#b8860b',
+    3: '#0dcaf0',
+    4: '#dc3545',
+    5: '#198754',
+  };
+
+  return colors[estado] || '#212529';
+};
+
+const formatFechaCorta = (fecha) => {
+  if (!fecha) {
+    return 'Sin completar';
+  }
+
+  return new Date(fecha).toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+const territoriosDisponiblesOptions = computed(() => {
+  return [...territorioStore.getTerritoriosDisponibles()]
+    .sort((a, b) => {
+      // Primero los que nunca se completaron; luego por fecha más antigua.
+      if (!a.fechaCompletado && !b.fechaCompletado) return 0;
+      if (!a.fechaCompletado) return -1;
+      if (!b.fechaCompletado) return 1;
+
+      const fechaA = new Date(a.fechaCompletado);
+      const fechaB = new Date(b.fechaCompletado);
+      return fechaA - fechaB;
+    })
+    .map((territorio) => ({
+      id: territorio.id,
+      estado: territorio.estado,
+      label: `${territorio.nombre} • ${formatFechaCorta(territorio.fechaCompletado)} • ${territorioStore.getNombreEstado(territorio.estado)} • ${territorio.turno == 0 ? 'M' : 'T'}`,
+    }));
+});
+
 // Watchers para mantener consistencia y limpiar duplicados o valores inválidos
 watch([() => form.value.conductor1, () => form.value.conductor2, agregarSegundoConductor], ([c1, c2, add2], [oldC1, oldC2, oldAdd2]) => {
   // Si el checkbox se desmarca, limpiar conductor2
@@ -150,16 +193,15 @@ const volver = () => {
       <div class="col-md-6">
         <label class="form-label"> <strong>Territorio *</strong></label>
         <select v-model="form.territorioId" class="form-select" required>
-          <option value="" disabled>Seleccione un territorio</option>
-         <option 
-          v-for="territorio in territorioStore.getTerritoriosDisponibles()" 
-          :key="territorio.id" 
-          :value="territorio.id"
-        >
-          {{ territorio.nombre.padEnd(20, ' ') }} 
-        {{ territorioStore.getNombrePrioridad(territorio.prioridad) }} 
-          » 🕒{{ territorio.ultimaSalida }}
-        </option>
+          <option value="" disabled>Seleccione: Territorio • Ult. completado • Estado • Turno</option>
+          <option
+            v-for="territorio in territoriosDisponiblesOptions"
+            :key="territorio.id"
+            :value="territorio.id"
+            :style="{ color: getEstadoColor(territorio.estado), fontWeight: '600' }"
+          >
+            {{ territorio.label }}
+          </option>
         </select>
       </div>
       <div class="col-md-6">
