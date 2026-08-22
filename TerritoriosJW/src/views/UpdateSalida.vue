@@ -25,19 +25,51 @@ const form = ref({
 });
 const agregarSegundoConductor = ref(false);
 
+const getEstadoColor = (estado) => {
+  const colors = {
+    1: '#6c757d',
+    2: '#b8860b',
+    3: '#0dcaf0',
+    4: '#dc3545',
+    5: '#198754',
+  };
+
+  return colors[estado] || '#212529';
+};
+
+const formatFechaCorta = (fecha) => {
+  if (!fecha) return 'Sin completar';
+  return new Date(fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' });
+};
+
 const territoriosParaEditar = computed(() => {
-  const disponibles = territorioStore.getTerritoriosDisponibles();
+  const disponibles = [...territorioStore.getTerritoriosDisponibles()]
+    .sort((a, b) => {
+      if (!a.fechaCompletado && !b.fechaCompletado) return 0;
+      if (!a.fechaCompletado) return -1;
+      if (!b.fechaCompletado) return 1;
+
+      const fechaA = new Date(a.fechaCompletado);
+      const fechaB = new Date(b.fechaCompletado);
+      return fechaA - fechaB;
+    });
   const territorioActual = territorioStore.getTerritorioPorId(form.value.territorioId);
   if (!territorioActual) {
-    return disponibles;
+    return disponibles.map((territorio) => ({
+      id: territorio.id,
+      estado: territorio.estado,
+      label: `${territorio.nombre} • ${formatFechaCorta(territorio.fechaCompletado)} • ${territorioStore.getNombreEstado(territorio.estado)} • ${territorio.turno == 0 ? 'M' : 'T'}`,
+    }));
   }
 
   const yaIncluido = disponibles.some((territorio) => territorio.id === territorioActual.id);
-  if (yaIncluido) {
-    return disponibles;
-  }
+  const listaConActual = yaIncluido ? disponibles : [territorioActual, ...disponibles];
 
-  return [territorioActual, ...disponibles];
+  return listaConActual.map((territorio) => ({
+    id: territorio.id,
+    estado: territorio.estado,
+    label: `${territorio.nombre} • ${formatFechaCorta(territorio.fechaCompletado)} • ${territorioStore.getNombreEstado(territorio.estado)} • ${territorio.turno == 0 ? 'M' : 'T'}`,
+  }));
 });
 
 watch(agregarSegundoConductor, (nuevoValor, valorAnterior) => {
@@ -189,11 +221,14 @@ const volver = () => router.push("/salidas");
       <div class="col-md-6">
         <label class="form-label"> <strong>Territorio *</strong></label>
         <select v-model="form.territorioId" class="form-select" required>
-          <option value="" disabled>Seleccione un territorio</option>
-          <option v-for="territorio in territoriosParaEditar" :key="territorio.id" :value="territorio.id">
-            {{ territorio.nombre.padEnd(20, ' ') }} 
-            {{ territorioStore.getNombrePrioridad(territorio.prioridad) }} 
-              » 🕒{{ territorio.ultimaSalida }}
+          <option value="" disabled>Seleccione: Territorio • Ult. completado • Estado • Turno</option>
+          <option
+            v-for="territorio in territoriosParaEditar"
+            :key="territorio.id"
+            :value="territorio.id"
+            :style="{ color: getEstadoColor(territorio.estado), fontWeight: '600' }"
+          >
+            {{ territorio.label }}
           </option>
         </select>
       </div>
