@@ -22,6 +22,7 @@ const salidaSemanalError = ref("");
 const salidaSemanalSuccess = ref("");
 const paginaActual = ref(1);
 const salidaSemanalSeleccionada = ref("");
+const mostrarInfoSalidaSemanal = ref(false);
 
 const ultimasSalidasSemanales = computed(() => {
   return [...store.salidasSemanales]
@@ -255,6 +256,21 @@ const descargarReporteExcel = async () => {
       </button>
     </div>
 
+    
+  </div>
+  <div class="d-flex justify-content-end mt-2">
+    <button
+      class="btn btn-sm btn-outline-secondary"
+      type="button"
+      @click="mostrarInfoSalidaSemanal = !mostrarInfoSalidaSemanal"
+    >
+      {{ mostrarInfoSalidaSemanal ? "Ocultar info" : "Ver info" }}
+    </button>
+  </div>
+
+  <div v-if="mostrarInfoSalidaSemanal" class="alert alert-info py-2 px-3 mb-0 mt-2 w-100 info-salida-semanal" role="note">
+    <strong>Salida Semanal:</strong> es el registro que organiza las salidas por semana.
+    Sirve para agrupar, controlar y reportar de forma ordenada todas las salidas realizadas en ese periodo. Es el inicio de la fecha de las salidas de la semana.
   </div>
 </div>
       <div v-if="store.salidaloading && !error" class="alert alert-info">

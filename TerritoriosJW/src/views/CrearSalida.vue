@@ -48,15 +48,8 @@ const getEstadoColor = (estado) => {
 };
 
 const formatFechaCorta = (fecha) => {
-  if (!fecha) {
-    return 'Sin completar';
-  }
-
-  return new Date(fecha).toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  if (!fecha) return 'Sin completar';
+    return new Date(fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' });
 };
 
 const territoriosDisponiblesOptions = computed(() => {
