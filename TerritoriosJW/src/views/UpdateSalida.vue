@@ -4,6 +4,8 @@ import { useSalidaStore } from '../store/storeSalidas';
 import { useUsuarioStore } from '../store/storeUsuarios';
 import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
+import { useMinutosPreferencia } from '../composables/useMinutosPreferencia';
+const { usarListaMinutos, minutosSugeridos } = useMinutosPreferencia();
 const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
 const territorioStore = useTerritorioStore();
@@ -24,6 +26,7 @@ const form = ref({
   tema: 1, // Valor por defecto para campaña
 });
 const agregarSegundoConductor = ref(false);
+const mostrarAvanzadas = ref(false);
 
 const getEstadoColor = (estado) => {
   const colors = {
@@ -232,20 +235,16 @@ const volver = () => router.push("/salidas");
           </option>
         </select>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-3">
         <label class="form-label"> <strong>Semana de Salida *</strong></label>
         <select v-model="form.salidaSemanalId" class="form-select" required>
           <option value="" disabled>Seleccione una semana</option>
           <option v-for="semana in store.salidasSemanales" :key="semana.id" :value="semana.id">
-            {{ semana.semanaInicio }}
+            {{ formatFechaCorta(semana.semanaInicio) }}
           </option>
         </select>
       </div>
-      <div class="col-md-6">
-        <label class="form-label"> <strong>Punto de Encuentro *</strong></label>
-        <input v-model="form.puntoEncuentro" type="text" class="form-control" required />
-      </div>
-      <div class="col-md-6">
+      <div class="col-md-3">
         <label class="form-label"> <strong>Fecha de Salida *</strong></label>
         <input v-model="form.fechaSalida" type="date" class="form-control" required />
       </div>
@@ -260,32 +259,63 @@ const volver = () => router.push("/salidas");
       </div>
       <div class="col-md-3">
         <label class="form-label"> <strong>Minutos *</strong></label>
-        <select v-model="form.horaSalidaMinute" class="form-select" required>
+        <select v-if="usarListaMinutos" v-model.number="form.horaSalidaMinute" class="form-select" required>
           <option value="" disabled>MM</option>
-          <option v-for="m in [0,10,20,30,40,50]" :key="m" :value="m">
+          <option v-for="m in minutosSugeridos" :key="m" :value="m">
             {{ m.toString().padStart(2,'0') }}
           </option>
         </select>
+        <input
+          v-else
+          v-model.number="form.horaSalidaMinute"
+          type="number"
+          class="form-control"
+          min="1"
+          max="59"
+          step="1"
+          placeholder="MM"
+          required
+        />
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="usarListaMinutosEditar" v-model="usarListaMinutos">
+          <label class="form-check-label small" for="usarListaMinutosEditar">Elegir de la lista</label>
+        </div>
       </div>
-      <div class="col-md-3">
-        <label class="form-label"> <strong>Turno *</strong></label>
-        <select v-model.number="form.turno" class="form-select" required>
-          <option :value="0">Mañana</option>
-          <option :value="1">Tarde</option>
-        </select>
+      <div class="col-12">
+        <label class="form-label"> <strong>Punto de Encuentro *</strong></label>
+        <input v-model="form.puntoEncuentro" type="text" class="form-control" required />
       </div>
-      <div class="col-md-3">
-        <label class="form-label"> <strong>Campaña *</strong></label>
-        <select v-model="form.tema" class="form-select" required>
-          <option value="" disabled>Seleccione una campaña</option>
-          <option v-for="(label, value) in territorioStore.temas" :key="value" :value="value">{{ label }}</option>
-        </select>
+
+      <div class="col-12">
+        <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none" @click="mostrarAvanzadas = !mostrarAvanzadas">
+          <i class="bi" :class="mostrarAvanzadas ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          {{ mostrarAvanzadas ? 'Ocultar opciones avanzadas' : 'Mostrar opciones avanzadas' }}
+        </button>
       </div>
-      <div class="col-3">
-        <!-- Esta parte es de observaciones pero actuara como grupo/s por ahora -->
-        <label class="form-label"> <strong>Grupo/s(Opcional)</strong></label> 
-        <input v-model="form.observaciones" class="form-control" type="text" placeholder="Todos"/>
+      <div v-if="mostrarAvanzadas" class="col-12">
+        <div class="row g-3 opciones-avanzadas">
+          <div class="col-md-4">
+            <label class="form-label"> <strong>Turno *</strong></label>
+            <select v-model.number="form.turno" class="form-select" required>
+              <option :value="0">Mañana</option>
+              <option :value="1">Tarde</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"> <strong>Campaña *</strong></label>
+            <select v-model="form.tema" class="form-select" required>
+              <option value="" disabled>Seleccione una campaña</option>
+              <option v-for="(label, value) in territorioStore.temas" :key="value" :value="value">{{ label }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <!-- Esta parte es de observaciones pero actuara como grupo/s por ahora -->
+            <label class="form-label"> <strong>Grupo/s (Opcional)</strong></label>
+            <input v-model="form.observaciones" class="form-control" type="text" placeholder="Todos"/>
+          </div>
+        </div>
       </div>
+
       <div class="col-12 d-flex justify-content-end gap-2 pt-2 mt-2 border-top">
         <button type="button" class="btn btn-secondary" @click="volver">Volver</button>
         <button type="submit" class="btn btn-primary">{{ store.salidaloadingSave ? 'Actualizando...' : 'Actualizar' }}</button>
@@ -296,6 +326,14 @@ const volver = () => router.push("/salidas");
     </div>
 </template>
 <style scoped>
+.opciones-avanzadas {
+  background: #f7f3fd;
+  border: 1px dashed #d9c9f2;
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin: 0;
+}
+
 .form-shell {
   background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
   border: 1px solid #eadff7;
