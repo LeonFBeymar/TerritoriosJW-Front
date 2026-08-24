@@ -6,6 +6,9 @@ import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
 import { useMinutosPreferencia } from '../composables/useMinutosPreferencia';
 import { usePuntosDeTerritorio } from '../composables/usePuntosDeTerritorio';
+import { useProgresoSistemaDias } from '../composables/useProgresoSistemaDias';
+import { useDisponibilidadSalida, armarHoraSalida } from '../composables/useDisponibilidadSalida';
+import { useNotificaciones } from '../composables/useNotificaciones';
 const { usarListaMinutos, minutosSugeridos } = useMinutosPreferencia();
 const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
@@ -30,7 +33,11 @@ const agregarSegundoConductor = ref(false);
 const mostrarAvanzadas = ref(false);
 const puntoManual = ref(false);
 
-const { puntos: puntosDelTerritorio, cargandoPuntos, cargarPuntos } = usePuntosDeTerritorio(computed(() => form.value.territorioId));
+const territorioSeleccionado = computed(() => form.value.territorioId);
+const { puntos: puntosDelTerritorio, cargandoPuntos, cargarPuntos } = usePuntosDeTerritorio(territorioSeleccionado);
+const { progresoDias, cargandoProgreso } = useProgresoSistemaDias(territorioSeleccionado);
+const { conflicto, verificando, verificar: verificarDisponibilidad } = useDisponibilidadSalida(form, salidaId);
+const { notificarError } = useNotificaciones();
 
 const getEstadoColor = (estado) => {
   const colors = {
@@ -149,18 +156,18 @@ onMounted(async () => {
 
 const editar = async () => {
   if (!form.value.conductor1) {
-    alert('Seleccione el conductor principal');
+    notificarError('Seleccione el conductor principal');
     return;
   }
 
   if (agregarSegundoConductor.value && form.value.conductor2 && form.value.conductor1 === form.value.conductor2) {
-    alert('No puede seleccionar el mismo conductor en ambos campos');
+    notificarError('No puede seleccionar el mismo conductor en ambos campos');
     form.value.conductor2 = '';
     return;
   }
 
   if (!form.value.fechaSalida || form.value.horaSalidaHour === '' || form.value.horaSalidaMinute === '') {
-    alert('Seleccione fecha y hora de salida válidas');
+    notificarError('Seleccione fecha y hora de salida válidas');
     return;
   }
 
@@ -169,9 +176,18 @@ const editar = async () => {
     usuarioIds.push(form.value.conductor2);
   }
 
-  const hh = String(form.value.horaSalidaHour).padStart(2, '0');
-  const mm = String(form.value.horaSalidaMinute).padStart(2, '0');
-  const horaSalidaIso = `${form.value.fechaSalida}T${hh}:${mm}:00`;
+  const horaSalidaIso = armarHoraSalida(
+    form.value.fechaSalida,
+    form.value.horaSalidaHour,
+    form.value.horaSalidaMinute
+  );
+
+  // El backend valida igual, pero así se avisa antes de tocar el territorio.
+  const disponibilidad = await verificarDisponibilidad();
+  if (disponibilidad?.disponible === false) {
+    notificarError(disponibilidad.mensaje || 'Ya existe una salida para este territorio en esta fecha y horario.');
+    return;
+  }
 
   await territorioStore.updateTerritorio(form.value.territorioId, {
     estado: 2,
@@ -194,7 +210,7 @@ const editar = async () => {
   });
 
   if (store.error) {
-    alert(store.error);
+    notificarError(store.error);
     return;
   }
 
@@ -249,6 +265,25 @@ const volver = () => router.push("/salidas");
             {{ territorio.label }}
           </option>
         </select>
+
+        <div v-if="form.territorioId" class="sistema-dias mt-2">
+          <div class="text-muted small fw-semibold mb-1">Días recomendados para hacer</div>
+          <div v-if="cargandoProgreso" class="text-muted small">Cargando días...</div>
+          <div v-else-if="progresoDias.length === 0" class="text-muted small">
+            El territorio no tiene días registrados.
+          </div>
+          <div v-else class="d-flex flex-wrap gap-1">
+            <span
+              v-for="dia in progresoDias"
+              :key="dia.id"
+              class="badge dia-badge"
+              :class="dia.completado ? 'dia-hecho' : 'dia-pendiente'"
+              :title="dia.completado ? 'Ya se hizo en este ciclo' : 'Todavía no se hizo'"
+            >
+              {{ dia.diaTurno }}
+            </span>
+          </div>
+        </div>
       </div>
       <div class="col-md-3">
         <label class="form-label"> <strong>Semana de Salida *</strong></label>
@@ -321,6 +356,23 @@ const volver = () => router.push("/salidas");
         </div>
       </div>
 
+      <div v-if="verificando || conflicto" class="col-12">
+        <div v-if="verificando" class="text-muted small">Verificando disponibilidad del territorio...</div>
+        <div v-else class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span class="flex-grow-1">
+            {{ conflicto.mensaje || 'Ya existe una salida para este territorio en esta fecha y horario.' }}
+          </span>
+          <router-link
+            v-if="conflicto.salidaExistenteId"
+            class="btn btn-sm btn-outline-dark"
+            :to="`/update-salida/${conflicto.salidaExistenteId}`"
+          >
+            Ver salida #{{ conflicto.salidaExistenteId }}
+          </router-link>
+        </div>
+      </div>
+
       <div class="col-12">
         <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none" @click="mostrarAvanzadas = !mostrarAvanzadas">
           <i class="bi" :class="mostrarAvanzadas ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
@@ -361,6 +413,21 @@ const volver = () => router.push("/salidas");
     </div>
 </template>
 <style scoped>
+.dia-badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.dia-pendiente {
+  background-color: #4d087a;
+  color: #ffffff;
+}
+
+.dia-hecho {
+  background-color: #e2e3e5;
+  color: #6c757d;
+}
+
 .opciones-avanzadas {
   background: #f7f3fd;
   border: 1px dashed #d9c9f2;

@@ -20,6 +20,7 @@ export default {
     createSalida: (data) => api.post('/Salida', data),
     updateSalida: (id, data) => api.put(`/Salida/${id}`, data),
     deleteSalida: (id) => api.delete(`/Salida/${id}`),
+    getDisponibilidadSalida: (params) => api.get('/Salida/disponibilidad', { params }),
     descargarExcelSalidas: () => api.get('/Salida/excel', { responseType: 'blob' }),
     descargarExcelReporte: (id) => api.get(`/Salida/excel-report/${id}`, { responseType: 'blob' }),
     //Usuarios
@@ -45,6 +46,21 @@ export default {
     vincularPuntoEncuentro: (id, territorioId) => api.post(`/PuntoEncuentro/${id}/territorios/${territorioId}`),
     desvincularPuntoEncuentro: (id, territorioId) => api.delete(`/PuntoEncuentro/${id}/territorios/${territorioId}`),
     sincronizarPuntosEncuentroDeTerritorio: (territorioId, data) => api.put(`/PuntoEncuentro/territorio/${territorioId}`, data),
+
+    //Sistema de Días
+    getSistemaDias: () => api.get('/SistemaDias'),
+    getSistemaDia: (id) => api.get(`/SistemaDias/${id}`),
+    createSistemaDia: (data) => api.post('/SistemaDias', data),
+    updateSistemaDia: (id, data) => api.put(`/SistemaDias/${id}`, data),
+    deleteSistemaDia: (id) => api.delete(`/SistemaDias/${id}`),
+    getTerritoriosDeSistemaDia: (id) => api.get(`/SistemaDias/${id}/territorios`),
+    getSistemaDiasDeTerritorio: (territorioId) => api.get(`/SistemaDias/territorio/${territorioId}`),
+    getProgresoSistemaDias: (territorioId) => api.get(`/SistemaDias/progreso/${territorioId}`),
+    getProgresoSistemaDiasGeneral: () => api.get('/SistemaDias/progreso'),
+    marcarSistemaDia: (id, territorioId) => api.post(`/SistemaDias/${id}/territorios/${territorioId}`),
+    desmarcarSistemaDia: (id, territorioId) => api.delete(`/SistemaDias/${id}/territorios/${territorioId}`),
+    reiniciarSistemaDiasTerritorio: (territorioId) => api.post(`/SistemaDias/territorio/${territorioId}/reiniciar`),
+    reiniciarSistemaDiasCompletados: () => api.post('/SistemaDias/reiniciar-completados'),
 
     //Salidas Semanal
     getSalidasSemanal: () => api.get('/SalidaSemanal'),

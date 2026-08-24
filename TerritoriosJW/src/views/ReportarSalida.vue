@@ -3,6 +3,8 @@ import { onMounted, ref, computed } from "vue";
 import { useSalidaStore } from "../store/storeSalidas";
 import { useReporteStore } from "../store/storeReporte";
 import { useTerritorioStore } from "../store/storeTerritorio";
+import { useSistemaDiasStore } from "../store/storeSistemaDias";
+import { useNotificaciones } from "../composables/useNotificaciones";
 import { useRouter } from "vue-router";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -12,6 +14,8 @@ import "leaflet-draw/dist/leaflet.draw.css";
 const store = useSalidaStore();
 const reporteStore = useReporteStore();
 const territorioStore = useTerritorioStore();
+const sistemaDiasStore = useSistemaDiasStore();
+const { notificarExito, notificarAviso } = useNotificaciones();
 const router = useRouter();
 const salidaR = ref(null);
 const territorioId = router.currentRoute.value.params.territorioId;
@@ -324,6 +328,18 @@ const crearReporte = async () => {
       tema: store.salida.tema || 1, // Mantener la campaña del territorio según la salida
       ...(Number.isNaN(turnoSalida) ? {} : { turno: turnoSalida }),
     });
+
+    // El día+turno de la salida queda registrado en el sistema de días del territorio.
+    const claveRegistrada = await sistemaDiasStore.registrarDiaDeSalida(store.salida, territorioId);
+    if (claveRegistrada) {
+      notificarExito(`Se registró ${claveRegistrada} en el sistema de días del territorio.`);
+    } else {
+      const clave = sistemaDiasStore.getClaveDiaTurno(store.salida?.horaSalida, store.salida?.turno);
+      notificarAviso(
+        sistemaDiasStore.error
+          || `No se registró el día en el sistema de días${clave ? ` (${clave} no está en el catálogo)` : ''}.`
+      );
+    }
 
 
     form.value = {

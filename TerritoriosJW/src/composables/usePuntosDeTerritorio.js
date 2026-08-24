@@ -25,9 +25,12 @@ export function usePuntosDeTerritorio(territorioId) {
     }
 
     cargandoPuntos.value = true;
-    const respuesta = await store.fetchPuntosDeTerritorio(id);
-    puntos.value = (respuesta || []).map(normalizarPunto);
-    cargandoPuntos.value = false;
+    try {
+      const respuesta = await store.fetchPuntosDeTerritorio(id);
+      puntos.value = (Array.isArray(respuesta) ? respuesta : respuesta?.puntos || []).map(normalizarPunto);
+    } finally {
+      cargandoPuntos.value = false;
+    }
   };
 
   watch(territorioId, (id) => cargarPuntos(id));
