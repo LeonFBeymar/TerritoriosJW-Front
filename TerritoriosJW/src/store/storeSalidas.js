@@ -2,6 +2,16 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
+// La API responde 409 con su propio mensaje (por ejemplo, salida duplicada para el
+// territorio en esa fecha y horario); conviene mostrar ese texto y no uno genérico.
+const mensajeDeError = (error, mensajePorDefecto) => {
+    const data = error?.response?.data;
+    if (typeof data === 'string' && data.trim()) return data;
+    if (data?.message) return data.message;
+    if (data?.title) return data.title;
+    return mensajePorDefecto;
+};
+
 export const useSalidaStore = defineStore('salida', {
     state: () => ({
         salidas: [],
@@ -52,7 +62,7 @@ export const useSalidaStore = defineStore('salida', {
             } catch (error) {
                 console.error('Error creating salida:', error);
                 this.salidaloadingSave = false;
-                this.error = ' No se pudo crear la salida.';
+                this.error = mensajeDeError(error, ' No se pudo crear la salida.');
             }
         },
         async updateSalida(id, data) {
@@ -68,7 +78,21 @@ export const useSalidaStore = defineStore('salida', {
             } catch (error) {
                 console.error(`Error updating salida with id ${id}:`, error);
                 this.salidaloadingSave = false;
-                this.error = ` No se pudo actualizar la salida con id ${id}.`;
+                this.error = mensajeDeError(error, ` No se pudo actualizar la salida con id ${id}.`);
+            }
+        },
+        // Consulta previa al guardado; el POST/PUT valida igual, esto es solo para avisar antes.
+        async verificarDisponibilidad(territorioId, horaSalida, excluirSalidaId = null) {
+            try {
+                const params = { territorioId, horaSalida };
+                if (excluirSalidaId) {
+                    params.excluirSalidaId = excluirSalidaId;
+                }
+                const response = await api.getDisponibilidadSalida(params);
+                return response.data;
+            } catch (error) {
+                console.error('Error verificando la disponibilidad de la salida:', error);
+                return null;
             }
         },
         async deleteSalida(id) {
