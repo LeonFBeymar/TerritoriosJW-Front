@@ -5,6 +5,7 @@ import { useUsuarioStore } from '../store/storeUsuarios';
 import { useTerritorioStore } from '../store/storeTerritorio';
 import { useRouter } from 'vue-router';
 import { useMinutosPreferencia } from '../composables/useMinutosPreferencia';
+import { usePuntosDeTerritorio } from '../composables/usePuntosDeTerritorio';
 const { usarListaMinutos, minutosSugeridos } = useMinutosPreferencia();
 const store = useSalidaStore();
 const usuarioStore = useUsuarioStore();
@@ -27,6 +28,9 @@ const form = ref({
 });
 const agregarSegundoConductor = ref(false);
 const mostrarAvanzadas = ref(false);
+const puntoManual = ref(false);
+
+const { puntos: puntosDelTerritorio, cargandoPuntos, cargarPuntos } = usePuntosDeTerritorio(computed(() => form.value.territorioId));
 
 const getEstadoColor = (estado) => {
   const colors = {
@@ -129,7 +133,18 @@ onMounted(async () => {
     form.value.observaciones = salida.value.observaciones || '';
     form.value.tema = salida.value.tema || 1;
     form.value.turno = salida.value.turno ?? (Number(form.value.horaSalidaHour) >= 12 ? 1 : 0);
+
+    // Si el punto guardado no está entre los del territorio, se muestra como texto libre.
+    await cargarPuntos(form.value.territorioId);
+    puntoManual.value = Boolean(form.value.puntoEncuentro)
+      && !puntosDelTerritorio.value.some(p => p.lugar === form.value.puntoEncuentro);
   }
+
+  // Se registra recién ahora para que la carga inicial no borre el punto ya guardado.
+  watch(() => form.value.territorioId, () => {
+    form.value.puntoEncuentro = '';
+    puntoManual.value = false;
+  });
 });
 
 const editar = async () => {
@@ -283,7 +298,27 @@ const volver = () => router.push("/salidas");
       </div>
       <div class="col-12">
         <label class="form-label"> <strong>Punto de Encuentro *</strong></label>
-        <input v-model="form.puntoEncuentro" type="text" class="form-control" required />
+        <select
+          v-if="puntosDelTerritorio.length > 0 && !puntoManual"
+          v-model="form.puntoEncuentro"
+          class="form-select"
+          required
+        >
+          <option value="" disabled>Seleccione un punto de encuentro</option>
+          <option v-for="punto in puntosDelTerritorio" :key="punto.id" :value="punto.lugar">
+            {{ punto.lugar }}
+          </option>
+        </select>
+        <input v-else v-model="form.puntoEncuentro" type="text" class="form-control" required />
+
+        <div v-if="cargandoPuntos" class="form-text">Buscando puntos de encuentro del territorio...</div>
+        <div v-else-if="form.territorioId && puntosDelTerritorio.length === 0" class="form-text">
+          El territorio no tiene puntos de encuentro asociados; escriba uno.
+        </div>
+        <div v-else-if="puntosDelTerritorio.length > 0" class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="puntoManualEditar" v-model="puntoManual">
+          <label class="form-check-label small" for="puntoManualEditar">Escribir otro punto</label>
+        </div>
       </div>
 
       <div class="col-12">

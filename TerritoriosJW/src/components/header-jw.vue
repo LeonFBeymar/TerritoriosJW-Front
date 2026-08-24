@@ -12,6 +12,9 @@ const usuarios = () => {
 const territorios = () => {
     router.push('/territorios');
 };
+const puntosEncuentro = () => {
+    router.push('/puntos-encuentro');
+};
 </script>
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark shadow-sm py-3" style="background-color: #4d087a;">
@@ -46,11 +49,18 @@ const territorios = () => {
             <i class="bi bi-door-open me-1"></i> Salidas
           </button>
           
-          <button 
-            class="btn btn-outline-light border-0 px-3 fw-medium transition-all" 
+          <button
+            class="btn btn-outline-light border-0 px-3 fw-medium transition-all"
             @click="usuarios"
           >
             <i class="bi bi-people me-1"></i> Conductores
+          </button>
+
+          <button
+            class="btn btn-outline-light border-0 px-3 fw-medium transition-all"
+            @click="puntosEncuentro"
+          >
+            <i class="bi bi-geo-alt me-1"></i> Puntos
           </button>
         </div>
       </div>
