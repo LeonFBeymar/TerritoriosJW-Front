@@ -9,6 +9,7 @@ import ReportarSalida from '../views/ReportarSalida.vue';
 import Territorio from '../views/Territorio.vue';
 import UpdateTerritorio from '../views/UpdateTerritorio.vue';
 import UpdateSalida from '../views/UpdateSalida.vue';
+import ListPuntosEncuentro from '../views/ListPuntosEncuentro.vue';
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -66,6 +67,11 @@ const router = createRouter({
             path: '/update-salida/:id',
             name: 'UpdateSalida',
             component: UpdateSalida,
+        },
+        {
+            path: '/puntos-encuentro',
+            name: 'ListPuntosEncuentro',
+            component: ListPuntosEncuentro,
         }
     ]
 });

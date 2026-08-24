@@ -34,6 +34,18 @@ export default {
     createReporte: (data) => api.post('/ReporteSalida', data),
     updateReporte: (id, data) => api.put(`/ReporteSalida/${id}`, data),
     deleteReporte: (id) => api.delete(`/ReporteSalida/${id}`),
+    //Puntos de Encuentro
+    getPuntosEncuentro: () => api.get('/PuntoEncuentro'),
+    getPuntoEncuentro: (id) => api.get(`/PuntoEncuentro/${id}`),
+    createPuntoEncuentro: (data) => api.post('/PuntoEncuentro', data),
+    updatePuntoEncuentro: (id, data) => api.put(`/PuntoEncuentro/${id}`, data),
+    deletePuntoEncuentro: (id) => api.delete(`/PuntoEncuentro/${id}`),
+    getTerritoriosDePuntoEncuentro: (id) => api.get(`/PuntoEncuentro/${id}/territorios`),
+    getPuntosEncuentroDeTerritorio: (territorioId) => api.get(`/PuntoEncuentro/territorio/${territorioId}`),
+    vincularPuntoEncuentro: (id, territorioId) => api.post(`/PuntoEncuentro/${id}/territorios/${territorioId}`),
+    desvincularPuntoEncuentro: (id, territorioId) => api.delete(`/PuntoEncuentro/${id}/territorios/${territorioId}`),
+    sincronizarPuntosEncuentroDeTerritorio: (territorioId, data) => api.put(`/PuntoEncuentro/territorio/${territorioId}`, data),
+
     //Salidas Semanal
     getSalidasSemanal: () => api.get('/SalidaSemanal'),
     getSalidaSemanal: (id) => api.get(`/SalidaSemanal/${id}`),
